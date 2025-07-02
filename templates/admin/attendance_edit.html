@@ -1,0 +1,28 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Edit Attendance{% endblock %}
+
+{% block content %}
+<div class="row justify-content-center">
+    <div class="col-md-6">
+        <div class="card shadow">
+            <div class="card-header">
+                <h3>Edit Attendance Record</h3>
+            </div>
+            <div class="card-body">
+                <p><strong>Student:</strong> {{ object.student.user.get_full_name }}</p>
+                <p><strong>Subject:</strong> {{ object.subject.name }}</p>
+                <p><strong>Date:</strong> {{ object.date }}</p>
+                <hr>
+                <form method="post">
+                    {% csrf_token %}
+                    {{ form|crispy }}
+                    <button type="submit" class="btn btn-primary mt-3">Save Changes</button>
+                    <a href="{% url 'admin_attendance_view' %}" class="btn btn-secondary mt-3">Cancel</a>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

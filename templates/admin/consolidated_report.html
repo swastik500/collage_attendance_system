@@ -1,0 +1,71 @@
+{% extends 'base.html' %}
+{% block title %}Consolidated Report - AttendSys{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <h1 class="mb-4">Consolidated Class Report</h1>
+
+    <!-- Filter Form -->
+    <div class="content-card mb-4" style="background: rgba(0,0,0,0.2);">
+        <form method="get" class="row g-3 align-items-end">
+            <div class="col-md-6">
+                <label for="course" class="form-label">Select Class to Generate Report</label>
+                <select name="course" id="course" class="form-select">
+                    <option value="">-- Select a Class --</option>
+                    {% for course in courses %}
+                    <option value="{{ course.id }}" {% if selected_course.id == course.id %}selected{% endif %}>
+                        {{ course.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="col-md-3">
+                <button type="submit" class="btn btn-primary w-100">Fetch Report</button>
+            </div>
+            <!-- A placeholder for a future Print button -->
+            <div class="col-md-3">
+                <button type="button" class="btn btn-outline-light w-100" onclick="window.print();">Print Report</button>
+            </div>
+        </form>
+    </div>
+
+    {% if selected_course %}
+    <hr style="border-color: rgba(255,255,255,0.2); margin: 2rem 0;">
+
+    <h3 class="mb-3">Report for: {{ selected_course.name }}</h3>
+
+    <div class="table-responsive">
+        <table class="table table-bordered table-hover text-center">
+            <thead class="table-light">
+                <tr class="text-dark">
+                    <th style="width: 5%;">Sr. No.</th>
+                    <th style="width: 25%;" class="text-start">Name of Student</th>
+                    {% for subject in subjects_in_course %}
+                        <th>{{ subject.name }}</th>
+                    {% endfor %}
+                    <th style="width: 15%;">Total Attendance Percentage</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for data in report_data %}
+                <tr>
+                    <td>{{ forloop.counter }}</td>
+                    <td class="text-start">{{ data.profile.user.get_full_name|upper }}</td>
+                    {% for att in data.subject_attendance %}
+                        <td>{{ att.attended }} / {{ att.conducted }}</td>
+                    {% endfor %}
+                    <td class="fw-bold">
+                        {% if data.percentage < 75 %}
+                            <span style="color: var(--text-danger);">{{ data.percentage|floatformat:2 }}%</span>
+                        {% else %}
+                            <span>{{ data.percentage|floatformat:2 }}%</span>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% endif %}
+</div>
+{% endblock %}

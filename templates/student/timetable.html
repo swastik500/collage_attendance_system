@@ -1,0 +1,52 @@
+{% extends 'base.html' %}
+{% load dict_helpers %} <!-- Load our custom filter -->
+
+{% block title %}My Weekly Timetable{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">My Weekly Timetable</h1>
+            <p class="lead text-secondary mb-0">{{ student_course.name }}</p>
+        </div>
+        <a href="{% url 'student_dashboard' %}" class="btn btn-sm btn-outline-secondary">Back to Dashboard</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-bordered text-center">
+            <thead>
+                <tr class="table-light">
+                    <th>Time Slot</th>
+                    {% for day in days %}
+                        <th>{{ day }}</th>
+                    {% endfor %}
+                </tr>
+            </thead>
+            <tbody>
+                {% with time_slots=schedule_by_day.values|first %}
+                {% for entry in time_slots|default_if_none:'' %}
+                <tr>
+                    <td class="fw-bold table-light">{{ entry.time_slot }}</td>
+                    {% for day in days %}
+                    <td>
+                        {% for class_entry in schedule_by_day|get_item:day %}
+                            {% if class_entry.time_slot == entry.time_slot %}
+                                <div class="p-2">
+                                    <strong>{{ class_entry.subject.name }}</strong><br>
+                                    <small class="text-secondary">
+                                        Prof. {{ class_entry.subject.faculty.first_name|first }}. {{ class_entry.subject.faculty.last_name }}
+                                    </small>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+                    </td>
+                    {% endfor %}
+                </tr>
+                {% endfor %}
+                {% endwith %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

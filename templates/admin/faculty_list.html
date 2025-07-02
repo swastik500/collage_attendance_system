@@ -1,0 +1,58 @@
+<!-- templates/admin/faculty_list.html -->
+{% extends 'base.html' %}
+
+{% block title %}Manage Faculty{% endblock %}
+
+{% block content %}
+<div class="d-flex justify-content-between align-items-center mb-4">
+    <h1>Manage Faculty</h1>
+    <!-- CHANGE THIS LINK -->
+    <a href="/admin/core/faculty/add/" class="btn btn-primary"><i class="fas fa-plus"></i> Add New Faculty</a>
+</div>
+
+
+<div class="card shadow">
+    <div class="card-body">
+        <div class="content-card mb-4" style="background: rgba(0,0,0,0.2);">
+            <h5 class="mb-3"><i class="fas fa-file-csv me-2"></i>Bulk Add Faculty via CSV</h5>
+            <p class="text-secondary small">Upload a CSV file with the headers: <code>username,password,first_name,last_name,email</code></p>
+            <form action="{% url 'admin_faculty_upload_csv' %}" method="post" enctype="multipart/form-data">
+                {% csrf_token %}
+                <div class="input-group">
+                    <input type="file" name="csv_file" class="form-control" accept=".csv" required>
+                    <button class="btn btn-primary" type="submit">Upload & Process</button>
+                </div>
+            </form>
+        </div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-hover">
+                <thead class="table-light">
+                    <tr>
+                        <th>Full Name</th>
+                        <th>Email</th>
+                        <th>Username</th>
+                        <th>Actions</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for user in faculty %}
+                    <tr>
+                        <td>{{ user.get_full_name }}</td>
+                        <td>{{ user.email }}</td>
+                        <td>{{ user.username }}</td>
+                        <td>
+                            <!-- CHANGE THIS LINK -->
+                            <a href="/admin/core/faculty/{{ user.id }}/change/" class="btn btn-sm btn-outline-primary"><i class="fas fa-edit"></i> Edit</a>
+                        </td>
+                    </tr>
+                    {% empty %}
+                    <tr>
+                        <td colspan="4" class="text-center">No faculty members found.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

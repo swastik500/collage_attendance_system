@@ -1,0 +1,67 @@
+{% extends 'base.html' %}
+
+{% block title %}Manage Leave Requests{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1>Manage Leave Requests</h1>
+    </div>
+
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-success">{{ message }}</div>
+        {% endfor %}
+    {% endif %}
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Applicant</th>
+                    <th>Role</th>
+                    <th>Dates</th>
+                    <th>Reason</th>
+                    <th>Status</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for request in leave_requests %}
+                <tr>
+                    <td>{{ request.user.get_full_name }}</td>
+                    <td><span class="badge bg-secondary">{{ request.user.get_role_display }}</span></td>
+                    <td>{{ request.start_date }} to {{ request.end_date }}</td>
+                    <td>{{ request.reason|truncatechars:50 }}</td>
+                    <td>
+                        {% if request.status == 'PENDING' %}
+                            <span class="badge bg-warning text-dark">Pending</span>
+                        {% elif request.status == 'APPROVED' %}
+                            <span class="badge bg-success">Approved</span>
+                        {% else %}
+                            <span class="badge bg-danger">Rejected</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        {% if request.status == 'PENDING' %}
+                        <form action="{% url 'admin_update_leave_status' request.pk 'APPROVED' %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-success">Approve</button>
+                        </form>
+                        <form action="{% url 'admin_update_leave_status' request.pk 'REJECTED' %}" method="post" class="d-inline">
+                            {% csrf_token %}
+                            <button type="submit" class="btn btn-sm btn-outline-danger">Reject</button>
+                        </form>
+                        {% else %}
+                            -
+                        {% endif %}
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="6" class="text-center py-4">No leave requests found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,116 @@
+{% extends 'base.html' %}
+{% block title %}Attendance History for {{ subject.name }}{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">Attendance History</h1>
+            <p class="lead text-secondary mb-0">{{ subject.name }}</p>
+        </div>
+        <a href="{% url 'faculty_dashboard' %}" class="btn btn-outline-light">Back to Dashboard</a>
+    </div>
+
+    <!-- Feedback Messages for user actions like editing -->
+    {% if messages %}
+        {% for message in messages %}
+        <div class="alert alert-success mt-4" role="alert" style="background-color: rgba(61, 255, 179, 0.1); border-color: var(--accent-color); color: var(--accent-color);">
+            {{ message }}
+        </div>
+        {% endfor %}
+    {% endif %}
+
+    <hr style="border-color: rgba(255,255,255,0.2); margin: 2rem 0;">
+
+    <div class="management-section mb-5">
+        <h5>Student Insights for this Subject</h5>
+        <div class="row">
+            {% for insight in student_insights %}
+            <div class="col-md-6 col-lg-4 mb-3">
+                <div class="list-group-item d-flex justify-content-between align-items-center">
+                    <div>
+                        <h6 class="mb-0">{{ insight.profile.user.get_full_name }}</h6>
+                        <small class="text-secondary">{{ insight.profile.roll_no }}</small>
+                    </div>
+                    <div>
+                        {% if insight.percentage < 75 %}
+                        <span class="fw-bold h5 text-danger">{{ insight.percentage|floatformat:1 }}%</span>
+                        {% else %}
+                        <span class="fw-bold h5">{{ insight.percentage|floatformat:1 }}%</span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+
+    <!-- Filter Form -->
+    <form method="get" class="row g-3 align-items-end mb-4">
+        <div class="col-md-4">
+            <label for="student" class="form-label">Filter by Student</label>
+            <select name="student" class="form-select">
+                <option value="">All Students</option>
+                {% for student in students_in_course %}
+                <option value="{{ student.id }}" {% if request.GET.student == student.id|stringformat:"s" %}selected{% endif %}>
+                    {{ student.user.get_full_name }} ({{ student.roll_no }})
+                </option>
+                {% endfor %}
+            </select>
+        </div>
+
+        <div class="col-md-3">
+            <label for="start_date" class="form-label">Start Date</label>
+            <input type="date" name="start_date" class="form-control" value="{{ request.GET.start_date }}">
+        </div>
+        <div class="col-md-3">
+            <label for="end_date" class="form-label">End Date</label>
+            <input type="date" name="end_date" class="form-control" value="{{ request.GET.end_date }}">
+        </div>
+
+        <div class="col-md-4">
+            <button type="submit" class="btn btn-primary">Filter</button>
+            <a href="{% url 'faculty_view_attendance' subject.id %}" class="btn btn-outline-light">Reset</a>
+        </div>
+    </form>
+
+    <!-- Attendance Records Table -->
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Student</th>
+                    <th>Status</th>
+                    <th>Last Updated</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in records %}
+                <tr>
+                    <td>{{ record.date }}</td>
+                    <td>{{ record.student.user.get_full_name }}</td>
+                    <td>
+                        {% if record.is_present %}
+                            <span class="badge" style="background-color: var(--accent-color); color: var(--bg-color);">Present</span>
+                        {% else %}
+                            <span class="badge" style="background-color: var(--danger-color);">Absent</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ record.updated_at|timesince }} ago</td>
+                    <td class="text-end">
+                        <a href="{% url 'faculty_edit_attendance' record.id %}" class="btn btn-sm btn-outline-light">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-4">No attendance records found for this subject or filter.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+</div>
+{% endblock %}

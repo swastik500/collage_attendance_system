@@ -1,0 +1,136 @@
+{% extends 'base.html' %}
+{% block title %}Admin Dashboard - AttendSys{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <!-- Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Admin Dashboard</h1>
+        <span class="text-secondary">System Overview</span>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row">
+        <div class="col-lg-2 col-md-6 mb-4"><div class="stat-card h-100"><div class="stat-title">Total Students</div><div class="stat-value">{{ total_students }}</div></div></div>
+        <div class="col-lg-2 col-md-6 mb-4"><div class="stat-card h-100"><div class="stat-title">Total Faculty</div><div class="stat-value">{{ total_faculty }}</div></div></div>
+        <div class="col-lg-2 col-md-6 mb-4"><div class="stat-card h-100"><div class="stat-title">Total Classes</div><div class="stat-value">{{ total_courses }}</div></div></div>
+        <div class="col-lg-2 col-md-6 mb-4"><div class="stat-card h-100"><div class="stat-title">Total Subjects</div><div class="stat-value">{{ total_subjects }}</div></div></div>
+        <div class="col-lg-2 col-md-6 mb-4"><div class="stat-card h-100"><div class="stat-title">Classes Today</div><div class="stat-value">{{ classes_today }}</div></div></div>
+        <div class="col-lg-2 col-md-6 mb-4"><div class="stat-card h-100"><div class="stat-title">Avg. Attendance</div><div class="stat-value">{{ average_attendance|floatformat:1 }}<small>%</small></div></div></div>
+    </div>
+
+    <!-- Management Links -->
+    <div class="row mt-4">
+        <div class="col-lg-6 mb-4">
+            <h5 class="mb-3">System Management</h5>
+            <div class="list-group">
+                <a href="{% url 'admin_student_list' %}" class="list-group-item"><i class="fas fa-users"></i>Manage Students</a>
+                <a href="{% url 'admin_faculty_list' %}" class="list-group-item"><i class="fas fa-user-tie"></i>Manage Faculty</a>
+                <a href="{% url 'admin_course_list' %}" class="list-group-item"><i class="fas fa-book"></i>Manage Classes</a>
+                <a href="{% url 'admin_subject_list' %}" class="list-group-item"><i class="fas fa-book-open"></i>Manage Subjects</a>
+            </div>
+        </div>
+        <div class="col-lg-6 mb-4">
+            <h5 class="mb-3">Attendance & Administration</h5>
+            <div class="list-group">
+                 <a href="{% url 'admin_attendance_view' %}" class="list-group-item"><i class="fas fa-calendar-check"></i>View & Filter Attendance</a>
+                 <a href="{% url 'admin_leave_request_list' %}" class="list-group-item"><i class="fas fa-plane-departure"></i>Manage Leave Requests</a>
+                 <a href="{% url 'admin_reports_hub' %}" class="list-group-item"><i class="fas fa-chart-pie"></i>Generate Reports</a>
+            </div>
+        </div>
+    </div>
+
+    <!-- Announcements -->
+    {% include 'partials/_announcements.html' %}
+
+    <!-- AI Chatbot Section -->
+    <div class="content-card mt-5">
+        <h5 class="mb-3"><i class="fas fa-robot me-2"></i>AI Database Assistant</h5>
+        <div id="chat-window" style="height: 250px; background-color: rgba(0,0,0,0.2); border-radius: 6px; padding: 1rem; overflow-y: scroll; margin-bottom: 1rem; border: 1px solid var(--border-color);">
+            <div class="chat-message bot">Hello! I'm your database assistant. Ask me a question about your data, like "How many students are there?" or "who has low attendance?".</div>
+        </div>
+        <form id="chatbot-form" autocomplete="off">
+            {% csrf_token %}
+            <div class="input-group">
+                <input type="text" id="chat-input" class="form-control" placeholder="Ask a question..." required>
+                <button class="btn btn-primary" type="submit">Send</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}
+
+
+{% block scripts %}
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    const chatForm = document.getElementById('chatbot-form');
+    const chatInput = document.getElementById('chat-input');
+    const chatWindow = document.getElementById('chat-window');
+
+    // This check is crucial: only run if the form exists on this page
+    if (chatForm) {
+        chatForm.addEventListener('submit', function(e) {
+            // This line prevents the page from reloading
+            e.preventDefault();
+
+            const question = chatInput.value.trim();
+            if (!question) return;
+
+            addMessage(question, 'user');
+            chatInput.value = '';
+            chatInput.focus();
+
+            // Get CSRF token from the form's hidden input
+            const csrfToken = chatForm.querySelector('[name=csrfmiddlewaretoken]').value;
+
+            // Display a 'thinking...' message
+            addMessage('Thinking...', 'bot thinking');
+
+            // Send the question to the Django view
+            fetch("{% url 'admin_chatbot_query' %}", {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                    'X-CSRFToken': csrfToken
+                },
+                body: `question=${encodeURIComponent(question)}`
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Remove the 'thinking...' message
+                const thinkingMsg = chatWindow.querySelector('.thinking');
+                if (thinkingMsg) {
+                    thinkingMsg.remove();
+                }
+
+                // Display the actual answer
+                if (data.error) {
+                    addMessage(`Error: ${data.error}`, 'bot');
+                } else {
+                    addMessage(data.answer, 'bot');
+                }
+            })
+            .catch(error => {
+                console.error('Chatbot fetch error:', error);
+                const thinkingMsg = chatWindow.querySelector('.thinking');
+                if (thinkingMsg) {
+                    thinkingMsg.remove();
+                }
+                addMessage('Sorry, a network error occurred. Please check the console.', 'bot');
+            });
+        });
+    }
+
+    function addMessage(text, type) {
+        const messageDiv = document.createElement('div');
+        // Use pre-wrap to respect newlines from the backend response
+        messageDiv.style.whiteSpace = 'pre-wrap';
+        messageDiv.className = `chat-message ${type}`;
+        messageDiv.textContent = text;
+        chatWindow.appendChild(messageDiv);
+        chatWindow.scrollTop = chatWindow.scrollHeight;
+    }
+});
+</script>
+{% endblock %}

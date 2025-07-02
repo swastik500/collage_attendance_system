@@ -1,0 +1,47 @@
+<!-- templates/admin/reports_hub.html -->
+{% extends 'base.html' %}
+{% block title %}Reports Hub{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <h1 class="mb-4">Reports & Analytics Hub</h1>
+    <p class="lead text-secondary">Select a report to generate from the options below.</p>
+
+    <div class="row mt-5">
+        <!-- Low Attendance Report Card -->
+        <div class="col-md-6 mb-4">
+            <div class="list-group-item">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-chart-line fa-2x me-4 text-danger"></i>
+                    <div>
+                        <h5 class="mb-1">Low Attendance Report</h5>
+                        <p class="mb-0 text-secondary">View all students with attendance below 75%.</p>
+                    </div>
+                </div>
+                <a href="{% url 'admin_low_attendance_report' %}" class="stretched-link"></a>
+            </div>
+        </div>
+        <div class="col-md-6 mb-4">
+            <div class="list-group-item">
+                <div class="d-flex align-items-center">
+                    <i class="fas fa-table-list fa-2x me-4" style="color: var(--primary-accent);"></i>
+                    <div>
+                        <h5 class="mb-1">Consolidated Report</h5>
+                        <p class="mb-0 text-secondary">View a subject-wise breakdown for an entire class.</p>
+                    </div>
+                </div>
+                <a href="{% url 'admin_consolidated_report' %}" class="stretched-link"></a>
+            </div>
+        </div>
+
+        <!-- Add other report cards here in the future -->
+        <!-- Example:
+        <div class="col-md-6 mb-4">
+            <div class="list-group-item">
+                ... Department Report ...
+            </div>
+        </div>
+        -->
+    </div>
+</div>
+{% endblock %}

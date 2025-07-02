@@ -1,0 +1,64 @@
+{% extends 'base.html' %}
+{% block title %}Student Dashboard - AttendSys{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <h1 class="mb-2">Student Dashboard</h1>
+    <p class="lead text-secondary mb-4">Welcome, {{ request.user.first_name }}! Here's your attendance summary.</p>
+
+    <div class="row">
+        <!-- Attendance Percentage Card -->
+        <div class="col-lg-5 mb-4">
+            <div class="stat-card text-center h-100 p-4 d-flex flex-column justify-content-center">
+                <div class="stat-title">Overall Attendance</div>
+                <div class="stat-value my-3" style="color: var(--primary-accent);">{{ attendance_percentage|floatformat:1 }}<small>%</small></div>
+                <p class="text-secondary mb-0 small">Based on {{ total_classes }} classes held</p>
+            </div>
+        </div>
+        <!-- Attendance Chart Card -->
+        <div class="col-lg-7 mb-4">
+            <div class="content-card h-100 p-4">
+                <canvas id="attendanceChart"></canvas>
+            </div>
+        </div>
+    </div>
+
+    <div class="mt-3">
+        <a href="{% url 'student_attendance_report' %}" class="btn btn-primary"><i class="fas fa-list-alt me-2"></i>View Detailed Report</a>
+        <a href="{% url 'apply_for_leave' %}" class="btn btn-outline-light"><i class="fas fa-plane-departure me-2"></i>Apply for Leave</a>
+        <a href="{% url 'student_timetable' %}" class="btn btn-outline-secondary"><i class="fas fa-calendar-alt me-2"></i>View My Timetable</a>
+    </div>
+
+    {% include 'partials/_announcements.html' %}
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    const ctx = document.getElementById('attendanceChart').getContext('2d');
+    const attendanceChart = new Chart(ctx, {
+        type: 'doughnut',
+        data: {
+            labels: ['Present', 'Absent'],
+            datasets: [{
+                data: [{{ present_count }}, {{ absent_count }}],
+                backgroundColor: ['#22d3ee', '#f85149'],
+                borderColor: ['#161b22'],
+                borderWidth: 4,
+                hoverOffset: 10
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            cutout: '75%',
+            plugins: {
+                legend: { display: false },
+                title: { display: true, text: 'Attendance Breakdown', color: '#e6edf3', font: { size: 16 } }
+            }
+        }
+    });
+});
+</script>
+{% endblock %}

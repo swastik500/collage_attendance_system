@@ -1,0 +1,55 @@
+{% extends 'base.html' %}
+{% block title %}Low Attendance Report{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <!-- Header Section with the new PDF Download Button -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <div>
+            <h1 class="mb-1">Low Attendance Report</h1>
+            <p class="lead text-secondary mb-0">Students with attendance below 75%</p>
+        </div>
+
+    </div>
+
+    <!-- The Report Table -->
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Student Name</th>
+                    <th>Roll No.</th>
+                    <th>Course</th>
+                    <th style="width: 25%;">Attendance Percentage</th>
+                    <th>Classes (Present / Total)</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student in students %}
+                <tr>
+                    <td>{{ student.user.get_full_name }}</td>
+                    <td>{{ student.roll_no }}</td>
+                    <td>{{ student.course.name }}</td>
+                    <td>
+                        <!-- Progress bar for visual representation -->
+                        <div class="progress" style="background-color: rgba(255, 82, 82, 0.2);">
+                            <div class="progress-bar" role="progressbar" style="width: {{ student.attendance_percentage }}%; background-color: var(--danger-color);"
+                                 aria-valuenow="{{ student.attendance_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                {{ student.attendance_percentage|floatformat:2 }}%
+                            </div>
+                        </div>
+                    </td>
+                    <td class="text-center">{{ student.present_classes }} / {{ student.total_classes }}</td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="5" class="text-center py-4">
+                        No students with low attendance found. Great!
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

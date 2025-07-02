@@ -1,0 +1,136 @@
+/* static/css/style.css - Unified "Airy Blue & Pink" Theme */
+
+/* 1. Import Font and Define Core Variables */
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+:root {
+    --bg-light: #E2F0F9;
+    --bg-white: #FFFFFF;
+    --primary-blue: #286FB4;
+    --accent-teal: #B0DDE4;
+    --accent-pink: #DF4C73;
+    --text-dark: #212529;
+    --text-light: #6c757d;
+    --font-family: 'Inter', sans-serif;
+    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    --border-color: #dee2e6;
+}
+
+/* 2. Global Body & Typography */
+body {
+    font-family: var(--font-family);
+    background-color: var(--bg-light);
+    color: var(--text-dark);
+}
+h1, h2, h3, h4, h5, h6 { font-weight: 600; }
+a { color: var(--primary-blue); text-decoration: none; }
+a:hover { color: #1a4a7a; }
+
+/* 3. Main Layout & Navigation */
+.navbar {
+    background-color: var(--primary-blue) !important;
+}
+.navbar-brand { color: var(--bg-white) !important; }
+.navbar .nav-link { color: rgba(255, 255, 255, 0.8) !important; }
+.navbar .nav-link:hover { color: var(--bg-white) !important; }
+.dropdown-menu { border-color: var(--border-color); }
+.dropdown-item:active { background-color: var(--primary-blue); }
+
+/* 4. Core Component: The Content Card */
+.content-card {
+    background-color: var(--bg-white);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+    padding: 2rem;
+}
+
+/* 5. Dashboard Stat Cards */
+.stat-card {
+    background-color: var(--bg-white);
+    border-radius: 12px;
+    border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+    padding: 1.5rem;
+}
+.stat-card .stat-title {
+    text-transform: uppercase;
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: var(--text-light);
+}
+.stat-card .stat-value { font-size: 2.5rem; color: var(--primary-blue); font-weight: 700; }
+.stat-card .stat-value small { font-size: 1.25rem; }
+
+/* 6. List Group (for navigation links) */
+.list-group-item {
+    border: 1px solid var(--border-color);
+    transition: all 0.2s ease-in-out;
+}
+.list-group-item:hover {
+    transform: translateX(5px);
+    border-left: 4px solid var(--accent-pink);
+    background-color: #f8f9fa;
+}
+.list-group-item .fas { color: var(--text-light); margin-right: 1rem; }
+
+/* 7. Tables */
+.table thead { background-color: #f8f9fa; }
+
+/* 8. Forms & Buttons */
+.form-control, .form-select {
+    border: 1px solid #ced4da;
+    padding: 0.75rem 1rem;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-blue);
+    box-shadow: 0 0 0 3px rgba(40, 111, 180, 0.2);
+}
+.btn-primary {
+    background-color: var(--primary-blue);
+    border-color: var(--primary-blue);
+}
+.btn-primary:hover { background-color: #1a4a7a; border-color: #1a4a7a; }
+.btn-danger { background-color: var(--accent-pink); border-color: var(--accent-pink); }
+
+/* 9. Standalone Login Page */
+.login-body { background-color: #f8f9fa; }
+.login-container { max-width: 900px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden; }
+.login-form-column { padding: 50px 40px; }
+.login-image-column {
+    background-color: var(--accent-teal);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+.login-image-column img { max-width: 80%; }
+.login-btn {
+    background-color: var(--accent-pink);
+    border-color: var(--accent-pink);
+    padding: 12px; font-weight: 600;
+}
+.login-btn:hover { background-color: #c4376b; border-color: #c4376b; }
+@media (max-width: 850px) { .login-image-column { display: none; } }
+
+
+.chat-message {
+    padding: 10px 15px;
+    border-radius: 12px;
+    margin-bottom: 10px;
+    max-width: 85%;
+    line-height: 1.4;
+    flex-shrink: 0;
+}
+.bot {
+    align-self: flex-start;
+}
+.user {
+    background-color: var(--primary-accent);
+    color: #0d1117;
+    align-self: flex-end;
+    margin-left: auto; /* Pushes the user message to the right */
+}
+#chat-window {
+    display: flex;
+    flex-direction: column;
+}

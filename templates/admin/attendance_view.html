@@ -1,0 +1,100 @@
+{% extends 'base.html' %}
+{% block title %}View Attendance{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">View & Filter Attendance</h1>
+        <!-- Export button is now part of the simplified filter form -->
+    </div>
+
+    <!-- Simplified Filter & Search Form -->
+    <div class="content-card mb-4" style="background: rgba(0,0,0,0.2);">
+        <form method="get" class="row g-3 align-items-end">
+            <!-- Search Box -->
+            <div class="col-lg-6">
+                <label for="q" class="form-label">Search by Student Name or Roll No</label>
+                <input type="text" name="q" class="form-control" placeholder="e.g., John Doe or S001" value="{{ request.GET.q }}">
+            </div>
+            <!-- Date Filter -->
+            <div class="col-lg-3">
+                <label for="date" class="form-label">Filter by Date</label>
+                <input type="date" name="date" class="form-control" value="{{ request.GET.date }}">
+            </div>
+            <!-- Action Buttons -->
+            <div class="col-lg-3 d-flex align-items-end">
+                <button type="submit" class="btn btn-primary w-100">Search</button>
+                <a href="{% url 'admin_attendance_view' %}" class="btn btn-outline-light ms-2" title="Reset Filters">Reset</a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Header for the results table including Export button -->
+    <div class="d-flex justify-content-between align-items-center mb-3">
+        <h5 class="mb-0">Attendance Records</h5>
+        <a href="{% url 'admin_attendance_export_csv' %}?{{ request.GET.urlencode }}" class="btn btn-sm btn-outline-success"><i class="fas fa-file-excel me-2"></i>Export These Results</a>
+    </div>
+
+    <!-- Attendance Records Table -->
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Date</th>
+                    <th>Student</th>
+                    <th>Course</th>
+                    <th>Subject</th>
+                    <th>Status</th>
+                    <th class="text-end">Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for record in attendance_records %}
+                <tr>
+                    <td>{{ record.date }}</td>
+                    <td>{{ record.student.user.get_full_name }} ({{ record.student.roll_no }})</td>
+                    <td>{{ record.student.course.name }}</td>
+                    <td>{{ record.subject.name }}</td>
+                    <td>
+                        {% if record.is_present %}
+                            <span class="badge" style="background-color: var(--accent-color); color: var(--bg-color);">Present</span>
+                        {% else %}
+                            <span class="badge" style="background-color: var(--danger-color);">Absent</span>
+                        {% endif %}
+                    </td>
+                    <td class="text-end">
+                        <a href="{% url 'admin_attendance_edit' record.pk %}" class="btn btn-sm btn-outline-light">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr>
+                    <td colspan="6" class="text-center py-4">No records found for the selected filters or search query.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Pagination -->
+    {% if is_paginated %}
+    <nav aria-label="Page navigation" class="mt-4">
+        <ul class="pagination justify-content-center">
+            {% if page_obj.has_previous %}
+                <li class="page-item"><a class="page-link" href="?page=1&{{ request.GET.urlencode }}">« First</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.previous_page_number }}&{{ request.GET.urlencode }}">Previous</a></li>
+            {% endif %}
+
+            <li class="page-item active" aria-current="page">
+                <span class="page-link">Page {{ page_obj.number }} of {{ page_obj.paginator.num_pages }}</span>
+            </li>
+
+            {% if page_obj.has_next %}
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.next_page_number }}&{{ request.GET.urlencode }}">Next</a></li>
+                <li class="page-item"><a class="page-link" href="?page={{ page_obj.paginator.num_pages }}&{{ request.GET.urlencode }}">Last »</a></li>
+            {% endif %}
+        </ul>
+    </nav>
+    {% endif %}
+
+</div>
+{% endblock %}

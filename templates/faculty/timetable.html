@@ -1,0 +1,54 @@
+{% extends 'base.html' %}
+{% block title %}My Weekly Timetable - AttendSys{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <!-- Page Header -->
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">My Weekly Timetable</h1>
+        <a href="{% url 'faculty_dashboard' %}" class="btn btn-sm btn-outline-light">Back to Dashboard</a>
+    </div>
+
+    <p class="text-secondary">This is your complete teaching schedule for the week.</p>
+
+    <hr style="border-color: rgba(255,255,255,0.2); margin: 2rem 0;">
+
+    <!-- Timetable Grid -->
+    <div class="row">
+        {% for day_code, day_name in days %}
+            <div class="col-lg-4 col-md-6 mb-4">
+                <div class="content-card h-100" style="background-color: rgba(0,0,0,0.2);">
+                    <h5 class="mb-3 text-center" style="color: var(--primary-accent);">{{ day_name }}</h5>
+                    <div class="list-group">
+                        {% for entry in timetable_entries %}
+                            {% if entry.day_of_week == day_code %}
+                                <div class="list-group-item" style="padding: 0.75rem 1rem;">
+                                    <div class="d-flex w-100 justify-content-between">
+                                        <h6 class="mb-1">{{ entry.subject.name }}</h6>
+                                    </div>
+                                    <p class="mb-1 text-secondary small">{{ entry.subject.course.name }}</p>
+                                    <small class="fw-bold">{{ entry.time_slot }}</small>
+                                </div>
+                            {% endif %}
+                        {% endfor %}
+
+                        {# Display a message if no classes are scheduled for a particular day #}
+                        {% with day_has_classes=False %}
+                            {% for entry in timetable_entries %}
+                                {% if entry.day_of_week == day_code %}
+                                    {% with day_has_classes=True %}{% endwith %}
+                                {% endif %}
+                            {% endfor %}
+                            {% if not day_has_classes %}
+                                <div class="list-group-item text-center text-secondary">
+                                    No classes scheduled.
+                                </div>
+                            {% endif %}
+                        {% endwith %}
+                    </div>
+                </div>
+            </div>
+        {% endfor %}
+    </div>
+</div>
+{% endblock %}

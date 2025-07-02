@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+{% load crispy_forms_tags %}
+
+{% block title %}Apply for Leave{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <h1 class="mb-4">Leave Application</h1>
+    <p class="text-secondary">Please fill out the form below to request leave. Your request will be sent to the administration for approval.</p>
+    <hr style="border-color: rgba(255,255,255,0.2);">
+    <form method="post">
+        {% csrf_token %}
+        {{ form|crispy }}
+        <button type="submit" class="btn btn-primary mt-3">Submit Request</button>
+    </form>
+</div>
+{% endblock %}

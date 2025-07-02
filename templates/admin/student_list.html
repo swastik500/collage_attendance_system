@@ -1,0 +1,42 @@
+{% extends 'base.html' %}
+{% block title %}Manage Students - AttendSys{% endblock %}
+
+{% block content %}
+<div class="content-card">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="mb-0">Manage Students</h1>
+        <a href="/admin/core/student/add/" class="btn btn-primary"><i class="fas fa-plus me-2"></i> Add Student</a>
+    </div>
+
+    <div class="table-responsive">
+        <table class="table table-hover">
+            <thead>
+                <tr>
+                    <th>Roll No.</th>
+                    <th>Full Name</th>
+                    <th>Email</th>
+                    <th>Course</th>
+                    <th class="text-end">Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for student_profile in students %}
+                <tr>
+                    <td>{{ student_profile.roll_no }}</td>
+                    <td>{{ student_profile.user.get_full_name }}</td>
+                    <td>{{ student_profile.user.email }}</td>
+                    <td>{{ student_profile.course.name }}</td>
+                    <td class="text-end">
+                        <a href="/admin/core/student/{{ student_profile.user.id }}/change/" class="btn btn-sm btn-outline-light">Edit</a>
+                    </td>
+                </tr>
+                {% empty %}
+                <tr><td colspan="5" class="text-center py-4 text-secondary">No students found.</td></tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+
+    {% include 'partials/_csv_upload.html' %}
+</div>
+{% endblock %}
