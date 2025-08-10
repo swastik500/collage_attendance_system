@@ -11,10 +11,21 @@
         <form method="post">
             {% csrf_token %}
 
-            <div class="mb-4">
-                <label for="id_date" class="form-label"><strong>Select Date:</strong></label>
-                <input type="date" name="attendance_date" class="form-control" style="width: 200px;" required value="{{ today|date:'Y-m-d' }}">
+            <div class="row mb-4 align-items-end">
+            <div class="col-md-4">
+                <label for="id_date" class="form-label fw-bold">Select Date:</label>
+                <input type="date" name="attendance_date" class="form-control" required value="{{ today|date:'Y-m-d' }}">
             </div>
+            <div class="col-md-4">
+                <label for="time_slot" class="form-label fw-bold">Select Time Slot:</label>
+                <select name="time_slot" id="time_slot" class="form-select" required>
+                    <option value="">-- Choose a time --</option>
+                    {% for slot in time_slots %}
+                    <option value="{{ slot.id }}">{{ slot }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
 
             <div class="table-responsive">
                 <table class="table table-striped">

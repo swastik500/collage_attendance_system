@@ -19,6 +19,7 @@
                     <th class="text-end">Actions</th>
                 </tr>
             </thead>
+            {% include 'partials/_csv_upload.html' %}
             <tbody>
                 {% for student_profile in students %}
                 <tr>
@@ -37,6 +38,5 @@
         </table>
     </div>
 
-    {% include 'partials/_csv_upload.html' %}
 </div>
 {% endblock %}

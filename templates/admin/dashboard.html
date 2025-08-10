@@ -11,12 +11,11 @@
 
     <!-- Stats Cards -->
     <div class="row">
-        <div class="col-lg-2 col-md-6 mb-4"><div class="stat-card h-100"><div class="stat-title">Total Students</div><div class="stat-value">{{ total_students }}</div></div></div>
-        <div class="col-lg-2 col-md-6 mb-4"><div class="stat-card h-100"><div class="stat-title">Total Faculty</div><div class="stat-value">{{ total_faculty }}</div></div></div>
-        <div class="col-lg-2 col-md-6 mb-4"><div class="stat-card h-100"><div class="stat-title">Total Classes</div><div class="stat-value">{{ total_courses }}</div></div></div>
-        <div class="col-lg-2 col-md-6 mb-4"><div class="stat-card h-100"><div class="stat-title">Total Subjects</div><div class="stat-value">{{ total_subjects }}</div></div></div>
-        <div class="col-lg-2 col-md-6 mb-4"><div class="stat-card h-100"><div class="stat-title">Classes Today</div><div class="stat-value">{{ classes_today }}</div></div></div>
-        <div class="col-lg-2 col-md-6 mb-4"><div class="stat-card h-100"><div class="stat-title">Avg. Attendance</div><div class="stat-value">{{ average_attendance|floatformat:1 }}<small>%</small></div></div></div>
+        <div class="col-lg-2 col-md-4 mb-4"><div class="stat-card h-100"><div class="stat-title">Total Students</div><div class="stat-value">{{ total_students }}</div></div></div>
+        <div class="col-lg-2 col-md-4 mb-4"><div class="stat-card h-100"><div class="stat-title">Total Faculty</div><div class="stat-value">{{ total_faculty }}</div></div></div>
+        <div class="col-lg-2 col-md-4 mb-4"><div class="stat-card h-100"><div class="stat-title">Total Classes</div><div class="stat-value">{{ total_courses }}</div></div></div>
+        <div class="col-lg-2 col-md-4 mb-4"><div class="stat-card h-100"><div class="stat-title">Total Subjects</div><div class="stat-value">{{ total_subjects }}</div></div></div>
+        <div class="col-lg-2 col-md-4 mb-4"><div class="stat-card h-100"><div class="stat-title">Avg. Attendance</div><div class="stat-value">{{ average_attendance|floatformat:1 }}<small>%</small></div></div></div>
     </div>
 
     <!-- Management Links -->
@@ -34,9 +33,17 @@
             <h5 class="mb-3">Attendance & Administration</h5>
             <div class="list-group">
                  <a href="{% url 'admin_attendance_view' %}" class="list-group-item"><i class="fas fa-calendar-check"></i>View & Filter Attendance</a>
-                 <a href="{% url 'admin_leave_request_list' %}" class="list-group-item"><i class="fas fa-plane-departure"></i>Manage Leave Requests</a>
-                 <a href="{% url 'admin_reports_hub' %}" class="list-group-item"><i class="fas fa-chart-pie"></i>Generate Reports</a>
+
             </div>
+        </div>
+    </div>
+    <div class="content-card">
+        <h5 class="mb-4">Quick Actions</h5>
+        <div class="row">
+            <div class="col-md-4 col-lg-3 mb-3"><a href="{% url 'admin_student_list' %}" class="text-decoration-none"><div class="quick-action-card h-100"><div class="icon"><i class="fas fa-users-cog"></i></div><h6>Manage Users</h6><p class="small text-secondary">Add, edit, or remove all users.</p></div></a></div>
+            <div class="col-md-4 col-lg-3 mb-3"><a href="{% url 'admin_reports_hub' %}" class="text-decoration-none"><div class="quick-action-card h-100"><div class="icon"><i class="fas fa-chart-bar"></i></div><h6>View Reports</h6><p class="small text-secondary">Generate attendance reports.</p></div></a></div>
+            <!--<div class="col-md-4 col-lg-3 mb-3"><a href="{% url 'admin_leave_request_list' %}" class="text-decoration-none"><div class="quick-action-card h-100"><div class="icon"><i class="fas fa-plane-departure"></i></div><h6>Leave Requests</h6><p class="small text-secondary">Review pending leave requests.</p></div></a></div>-->
+            <div class="col-md-4 col-lg-3 mb-3"><a href="/admin/" class="text-decoration-none"><div class="quick-action-card h-100"><div class="icon"><i class="fas fa-cog"></i></div><h6>System Settings</h6><p class="small text-secondary">Advanced configuration.</p></div></a></div>
         </div>
     </div>
 

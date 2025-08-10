@@ -4,53 +4,66 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>{% block title %}AttendSys{% endblock %}</title>
+    <title>{% block title %}Swip{% endblock %}</title>
+    <link rel="icon" type="image/x-icon" href="{% static 'images/favicon.ico' %}">
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css">
     <link rel="stylesheet" href="{% static 'css/style.css' %}">
 </head>
 <body>
-    <nav class="navbar navbar-expand-lg navbar-dark bg-primary shadow-sm">
-        <div class="container">
-            <a class="navbar-brand fw-bold" href="{% url 'dashboard_redirect' %}"><i class="fas fa-university me-2"></i>AttendSys</a>
+    <nav class="navbar app-nav navbar-expand-lg navbar-light bg-white sticky-top">
+        <div class="container-fluid px-4">
+            {% if request.user.is_authenticated and request.user.role != 'ADMIN' %}
+            <button class="navbar-toggler me-2" type="button" id="sidebar-toggler">
+                <i class="fas fa-bars"></i>
+            </button>
+            {% endif %}
+            <a class="navbar-brand fw-bold d-flex align-items-center" href="{% url 'dashboard_redirect' %}">
+                <img src="{% static 'images/your-logo.png' %}" alt="Swip Logo" style="height: 30px; width: auto;" class="me-2">
+                <strong>Swip</strong>
+            </a>
             {% if user.is_authenticated %}
-            <ul class="navbar-nav ms-auto">
-                <li class="nav-item dropdown">
-                    <a class="nav-link dropdown-toggle" href="#" role="button" data-bs-toggle="dropdown">
-                        Welcome, {{ user.first_name|default:user.username }}
+            <div class="d-flex align-items-center">
+                <span class="navbar-text me-3 d-none d-md-block">Welcome, {{ user.first_name|default:user.username }}</span>
+                <div class="dropdown">
+                    <a href="#" class="d-block link-dark text-decoration-none dropdown-toggle" data-bs-toggle="dropdown" aria-expanded="false">
+                        <i class="fas fa-user-circle fa-2x"></i>
                     </a>
                     <ul class="dropdown-menu dropdown-menu-end">
                         <li><a class="dropdown-item" href="{% url 'dashboard_redirect' %}">Dashboard</a></li>
                         <li><hr class="dropdown-divider"></li>
                         <li>
-                            <form action="{% url 'logout' %}" method="post" class="d-inline w-100">
+                           <form action="{% url 'logout' %}" method="post" class="d-inline w-100">
                                 {% csrf_token %}
                                 <button type="submit" class="dropdown-item"><i class="fas fa-sign-out-alt me-2"></i>Logout</button>
                             </form>
                         </li>
                     </ul>
-                </li>
-            </ul>
+                </div>
+            </div>
             {% endif %}
         </div>
     </nav>
 
-    <main class="container my-4">
-        {% if messages %}
-        <div class="my-3">
-            {% for message in messages %}
-                <div class="alert alert-success">{{ message }}</div>
-            {% endfor %}
-        </div>
-        {% endif %}
-
+    <!-- This is now the single, main content area for the entire site -->
+    <main>
         {% block content %}{% endblock %}
     </main>
+
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.2/dist/js/bootstrap.bundle.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+    {% block scripts %}{% endblock %}
+    <script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const sidebarToggler = document.getElementById('sidebar-toggler');
+        const sidebar = document.querySelector('.dashboard-sidebar');
 
-    {% block scripts %}
-    <!-- This block should now be empty, ready for page-specific scripts -->
-    {% endblock %}
+        if (sidebarToggler && sidebar) {
+            sidebarToggler.addEventListener('click', function() {
+                sidebar.classList.toggle('show');
+            });
+        }
+    });
+    </script>
 </body>
 </html>

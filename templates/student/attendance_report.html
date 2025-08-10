@@ -1,42 +1,79 @@
 {% extends 'base.html' %}
-
-{% block title %}My Attendance Report{% endblock %}
+{% block title %}My Detailed Attendance Report{% endblock %}
 
 {% block content %}
-<h1 class="mb-4">My Detailed Attendance Report</h1>
+<div class="dashboard-wrapper">
+    {% include 'partials/_sidebar.html' %}
 
-<div class="card shadow">
-    <div class="card-body">
-        <div class="table-responsive">
-            <table class="table table-bordered table-hover">
-                <thead class="table-light">
-                    <tr>
-                        <th>Date</th>
-                        <th>Subject</th>
-                        <th>Status</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {% for record in attendance_records %}
-                    <tr>
-                        <td>{{ record.date }}</td>
-                        <td>{{ record.subject.name }}</td>
-                        <td>
-                            {% if record.is_present %}
-                                <span class="badge bg-success">Present</span>
-                            {% else %}
-                                <span class="badge bg-danger">Absent</span>
-                            {% endif %}
-                        </td>
-                    </tr>
-                    {% empty %}
-                    <tr>
-                        <td colspan="3" class="text-center">No attendance records found.</td>
-                    </tr>
-                    {% endfor %}
-                </tbody>
-            </table>
+    <div class="dashboard-content">
+        <div class="d-flex justify-content-between align-items-center mb-4">
+            <h2 class="mb-0">My Detailed Attendance Report</h2>
+            <button class="btn btn-outline-secondary" onclick="window.print();"><i class="fas fa-print me-2"></i>Print Report</button>
         </div>
+
+        <!-- Overall Summary Card -->
+        <div class="card shadow-sm mb-4">
+            <div class="card-body">
+                <div class="row align-items-center text-center">
+                    <div class="col-md-4">
+                        <h6 class="text-secondary">Overall Percentage</h6>
+                        <h3 class="fw-bold" style="color: var(--primary-blue);">{{ overall_percentage|floatformat:2 }}%</h3>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-secondary">Classes Attended</h6>
+                        <h3 class="fw-bold">{{ overall_attended }}</h3>
+                    </div>
+                    <div class="col-md-4">
+                        <h6 class="text-secondary">Total Classes Held</h6>
+                        <h3 class="fw-bold">{{ overall_conducted }}</h3>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Subject-wise Breakdown Table -->
+        <div class="card shadow-sm">
+            <div class="card-header bg-light">
+                <h5 class="mb-0">Subject-wise Breakdown</h5>
+            </div>
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead>
+                        <tr>
+                            <th scope="col">Subject</th>
+                            <th scope="col" class="text-center">Attendance (Attended / Total)</th>
+                            <th scope="col" class="text-center" style="width: 35%;">Attendance Bar</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for data in report_data %}
+                        <tr>
+                            <td class="fw-bold">{{ data.subject_name }}</td>
+                            <td class="text-center">{{ data.attended }} / {{ data.conducted }}</td>
+                            <td>
+                                <div class="progress" style="height: 20px;">
+                                    {% if data.percentage < 75 %}
+                                    <div class="progress-bar bg-danger" role="progressbar" style="width: {{ data.percentage }}%;" aria-valuenow="{{ data.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                        {{ data.percentage|floatformat:1 }}%
+                                    </div>
+                                    {% else %}
+                                    <div class="progress-bar" role="progressbar" style="width: {{ data.percentage }}%; background-color: var(--primary-blue);" aria-valuenow="{{ data.percentage }}" aria-valuemin="0" aria-valuemax="100">
+                                        {{ data.percentage|floatformat:1 }}%
+                                    </div>
+                                    {% endif %}
+                                </div>
+                            </td>
+                        </tr>
+                        {% empty %}
+                        <tr>
+                            <td colspan="3" class="text-center text-secondary py-4">No attendance records found yet.</td>
+                        </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+
     </div>
 </div>
 {% endblock %}

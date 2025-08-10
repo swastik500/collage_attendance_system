@@ -2,7 +2,7 @@
 
 from django.contrib import admin
 from django.contrib.auth.admin import UserAdmin
-from .models import User, Department, Class, Subject, StudentProfile, Attendance, LeaveRequest, Student, Faculty
+from .models import User, Department, Class, Subject, StudentProfile, Attendance, LeaveRequest, Student, Faculty, HOD
 from .models import Announcement
 from .models import TimeSlot, Timetable
 
@@ -69,6 +69,21 @@ class TimetableAdmin(admin.ModelAdmin):
     def get_faculty(self, obj):
         return obj.subject.faculty
 
+
+# --- NEW: HOD Admin ---
+@admin.register(HOD)
+class HODAdmin(UserAdmin):
+    # This ensures new users created here automatically get the HOD role
+    def save_model(self, request, obj, form, change):
+        if not change:
+            obj.role = User.Role.HOD
+        super().save_model(request, obj, form, change)
+
+    list_display = ('username', 'first_name', 'last_name', 'email')
+
+    # Only show users with the HOD role in this specific admin view
+    def get_queryset(self, request):
+        return User.objects.filter(role=User.Role.HOD)
 
 admin.site.register(TimeSlot)
 

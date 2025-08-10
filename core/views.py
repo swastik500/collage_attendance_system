@@ -33,25 +33,24 @@ from .chatbot_logic import get_chatbot_response
 
 # core/views.py
 
-from .models import User, StudentProfile, Class, Subject, Attendance, Announcement, LeaveRequest, Timetable
+from .models import User, StudentProfile, Class, Subject, Attendance, Announcement, LeaveRequest, Timetable, TimeSlot
 from .decorators import admin_required, faculty_required, student_required
-
+from .decorators import hod_required
 
 # =================================================================================
 # SHARED VIEWS (Used by multiple roles or for redirection)
 # =================================================================================
 
+
 @login_required
 def dashboard_redirect(request):
-    """
-    Redirects users to their respective dashboards based on their role
-    after they log in. This is the crucial view that caused the previous error.
-    """
     if request.user.role == 'ADMIN':
         return redirect('admin_dashboard')
+    elif request.user.role == 'HOD':
+        return redirect('hod_dashboard') # <-- NEW REDIRECT
     elif request.user.role == 'FACULTY':
         return redirect('faculty_dashboard')
-    else:  # Assumes the only other role is STUDENT
+    else:
         return redirect('student_dashboard')
 
 
@@ -60,13 +59,10 @@ def dashboard_redirect(request):
 # =================================================================================
 
 class AdminRequiredMixin(LoginRequiredMixin):
-    """
-    A mixin for class-based views that ensures the logged-in user is an Admin.
-    """
-    login_url = '/login/'  # Redirect to login page if not authenticated
-
+    """Ensures that the user is an admin or HOD."""
     def dispatch(self, request, *args, **kwargs):
-        if not request.user.is_authenticated or request.user.role != 'ADMIN':
+        allowed_roles = ['ADMIN', 'HOD']
+        if not request.user.is_authenticated or request.user.role not in allowed_roles:
             return self.handle_no_permission()
         return super().dispatch(request, *args, **kwargs)
 
@@ -263,88 +259,107 @@ def admin_chatbot_query(request):
     return JsonResponse({'answer': answer})
 
 
-# core/views.py
-
-# ... existing imports ...
-
 @admin_required
 def consolidated_report(request):
     """
-    Generates a consolidated attendance report for a selected course,
-    showing each student's attendance for each subject, matching the image provided.
+    Generates a consolidated attendance report for a selected class,
+    showing each student's attendance for each subject, and a final summary.
     """
-    selected_course_id = request.GET.get('course')
-    courses = Class.objects.all().order_by('name')
+    selected_class_id = request.GET.get('class')
+    classes = Class.objects.all().order_by('name')
 
-    report_data = []
-    subjects_in_course = []
-    selected_course = None
+    # Initialize context with default empty values
+    context = {
+        'classes': classes,
+        'selected_class_id': selected_class_id,
+        'report_data': [],
+        'subjects_in_course': [],
+        'selected_class': None,
+        'subject_overall_percentages': {},
+        'total_students_in_report': 0,
+        'students_above_75': 0,
+        'students_below_75': 0,
+    }
 
-    if selected_course_id:
+    if selected_class_id:
         try:
-            selected_course = Class.objects.get(pk=selected_course_id)
-            students = StudentProfile.objects.filter(course=selected_course).select_related('user').order_by(
-                'user__first_name')
-            subjects_in_course = Subject.objects.filter(course=selected_course).order_by('name')
+            selected_class = Class.objects.get(pk=selected_class_id)
+            context['selected_class'] = selected_class
 
-            # Efficiently get total conducted classes for each subject in the course
-            # This avoids repeated queries inside the loop.
+            students = StudentProfile.objects.filter(course=selected_class).select_related('user').order_by(
+                'user__first_name')
+            subjects_in_course = Subject.objects.filter(course=selected_class).order_by('name')
+            context['subjects_in_course'] = subjects_in_course
+
+            # --- EFFICIENT DATA PRE-FETCHING ---
+
+            # 1. Get total conducted lecture count for each subject.
             lectures_conducted_map = {
-                subject.id: Attendance.objects.filter(subject=subject).values('date').distinct().count()
+                subject.id: Attendance.objects.filter(subject=subject, student__course=selected_class).values('date',
+                                                                                                              'time_slot').distinct().count()
                 for subject in subjects_in_course
             }
 
-            # Efficiently get all 'present' attendance records for all students in the course at once
+            # 2. Get present counts for each individual student-subject pair.
             present_counts_qs = Attendance.objects.filter(
                 student__in=students,
                 subject__in=subjects_in_course,
                 is_present=True
             ).values('student_id', 'subject_id').annotate(present_count=Count('id'))
 
-            # Convert the queryset to a more accessible dictionary: {(student_id, subject_id): count}
-            present_counts_map = {
-                (item['student_id'], item['subject_id']): item['present_count']
-                for item in present_counts_qs
-            }
+            present_counts_map = {(item['student_id'], item['subject_id']): item['present_count'] for item in
+                                  present_counts_qs}
 
+            # --- CALCULATE HEADER AVERAGES ---
+            subject_percentages = {}
+            for subject in subjects_in_course:
+                total_present_all = Attendance.objects.filter(subject=subject, student__course=selected_class,
+                                                              is_present=True).count()
+                total_records_all = Attendance.objects.filter(subject=subject, student__course=selected_class).count()
+                percentage = (total_present_all / total_records_all) * 100 if total_records_all > 0 else 0
+                subject_percentages[subject.id] = percentage
+            context['subject_overall_percentages'] = subject_percentages
+
+            # --- BUILD MAIN REPORT DATA ---
+            report_data = []
             for student in students:
-                student_data = {
-                    'profile': student,
-                    'subject_attendance': [],
-                    'total_attended': 0,
-                    'total_conducted': 0
-                }
-
+                student_data = {'profile': student, 'subject_attendance': [], 'total_attended': 0, 'total_conducted': 0}
                 for subject in subjects_in_course:
                     conducted_count = lectures_conducted_map.get(subject.id, 0)
                     present_count = present_counts_map.get((student.id, subject.id), 0)
+                    subject_percentage = (present_count / conducted_count) * 100 if conducted_count > 0 else 0
 
                     student_data['subject_attendance'].append({
                         'attended': present_count,
                         'conducted': conducted_count,
+                        'percentage': subject_percentage
                     })
-
                     student_data['total_attended'] += present_count
                     student_data['total_conducted'] += conducted_count
 
-                # Calculate overall percentage for the student
-                if student_data['total_conducted'] > 0:
-                    student_data['percentage'] = (student_data['total_attended'] / student_data[
-                        'total_conducted']) * 100
-                else:
-                    student_data['percentage'] = 0.0
-
+                student_data['percentage'] = (student_data['total_attended'] / student_data['total_conducted']) * 100 if \
+                student_data['total_conducted'] > 0 else 0.0
                 report_data.append(student_data)
+            context['report_data'] = report_data
 
-        except Course.DoesNotExist:
-            messages.error(request, "The selected course does not exist.")
+            # --- CALCULATE FINAL SUMMARY STATISTICS ---
+            total_students_in_report = len(report_data)
+            students_above_75 = 0
+            students_below_75 = 0
 
-    context = {
-        'courses': courses,
-        'report_data': report_data,
-        'subjects_in_course': subjects_in_course,
-        'selected_course': selected_course,
-    }
+            for data in report_data:
+                if data['percentage'] >= 75:
+                    students_above_75 += 1
+                else:
+                    students_below_75 += 1
+
+            context['total_students_in_report'] = total_students_in_report
+            context['students_above_75'] = students_above_75
+            context['students_below_75'] = students_below_75
+
+        except Class.DoesNotExist:
+            messages.error(request, "The selected class does not exist.")
+
     return render(request, 'admin/consolidated_report.html', context)
 
 
@@ -428,6 +443,106 @@ def delete_announcement(request, pk):
 
     # Redirect back to the admin dashboard where the announcements are listed
     return redirect('admin_dashboard')
+
+
+@admin_required
+def lecture_history_report(request):
+    """
+    Generates a report showing a history of all lectures for which
+    attendance has been taken. Can be filtered by Class.
+    """
+    # Base queryset: Get distinct combinations of date, time_slot, and subject
+    # This represents a unique "lecture session".
+    lecture_sessions = Attendance.objects.values(
+        'date',
+        'time_slot',
+        'subject'
+    ).distinct().order_by('-date', '-time_slot__start_time')
+
+    # Get the class filter from the request
+    selected_class_id = request.GET.get('class')
+    selected_class = None
+
+    if selected_class_id:
+        try:
+            selected_class = Class.objects.get(pk=selected_class_id)
+            # Filter the sessions by the selected class
+            lecture_sessions = lecture_sessions.filter(subject__course=selected_class)
+        except Class.DoesNotExist:
+            messages.error(request, "The selected class does not exist.")
+            lecture_sessions = Attendance.objects.none()  # Return no results if class is invalid
+
+    # Annotate each session with counts
+    # This is a more advanced step that would typically use Subquery, but a loop is clearer here.
+    report_data = []
+
+    for session in lecture_sessions:
+        subject = Subject.objects.get(pk=session['subject'])
+        time_slot = None
+        if session['time_slot']:  # Check if the time_slot ID is not None
+            try:
+                time_slot = TimeSlot.objects.get(pk=session['time_slot'])
+            except TimeSlot.DoesNotExist:
+                # This case is unlikely but safe to handle
+                time_slot = None
+
+                # Get all attendance records for this specific session
+        records_for_session = Attendance.objects.filter(
+            date=session['date'],
+            time_slot_id=session['time_slot'],
+            subject_id=session['subject']
+        )
+
+        total_students = records_for_session.count()
+        present_students = records_for_session.filter(is_present=True).count()
+
+        report_data.append({
+            'subject': subject,
+            'date': session['date'],
+            'time_slot': time_slot,
+            'faculty': subject.faculty,
+            'total_students': total_students,
+            'present_students': present_students
+        })
+
+    context = {
+        'classes': Class.objects.all().order_by('name'),
+        'report_data': report_data,
+        'selected_class': selected_class,
+    }
+
+    return render(request, 'admin/lecture_history_report.html', context)
+
+
+
+
+# --- NEW: HOD Dashboard View ---
+@hod_required
+def hod_dashboard(request):
+    """
+    Displays the main dashboard for the HOD.
+    For now, it shows the same system-wide stats as the Admin.
+    """
+    # This logic is identical to admin_dashboard for now
+    average_attendance_agg = Attendance.objects.aggregate(
+        avg=Avg(Case(When(is_present=True, then=1), default=0, output_field=IntegerField())))
+    average_attendance = (average_attendance_agg['avg'] * 100) if average_attendance_agg['avg'] is not None else 0
+    today = timezone.now().date()
+    classes_today = Timetable.objects.filter(day_of_week=today.isoweekday()).count()  # A simpler count for now
+
+    context = {
+        'total_students': StudentProfile.objects.count(),
+        'total_faculty': User.objects.filter(role='FACULTY').count(),
+        'total_classes': Class.objects.count(),
+        'total_subjects': Subject.objects.count(),
+        'average_attendance': average_attendance,
+        'classes_today': classes_today,
+        'announcements': Announcement.objects.all()[:5],
+    }
+
+    return render(request, 'hod/dashboard.html', context)
+
+
 
 
 
@@ -589,40 +704,57 @@ def faculty_dashboard(request):
     }
     return render(request, 'faculty/dashboard.html', context)
 
+
+
+
 @faculty_required
 def take_attendance(request, subject_id):
     subject = get_object_or_404(Subject, pk=subject_id)
 
-    # SECURITY CHECK: Ensure the faculty member owns this subject.
+    # SECURITY CHECK:
     if subject.faculty != request.user:
         raise PermissionDenied("You are not authorized to take attendance for this subject.")
 
     students = StudentProfile.objects.filter(course=subject.course).select_related('user')
 
+    # Get all available time slots to populate the dropdown
+    time_slots = TimeSlot.objects.all()
+
     if request.method == 'POST':
         attendance_date = request.POST.get('attendance_date')
+        time_slot_id = request.POST.get('time_slot')  # Get the selected time slot ID
         student_ids = request.POST.getlist('student_ids')
+
+        # Validate that a time slot was selected
+        if not time_slot_id:
+            messages.error(request, "Please select a time slot.")
+            return redirect('faculty_take_attendance', subject_id=subject.id)
+
+        selected_time_slot = get_object_or_404(TimeSlot, pk=time_slot_id)
 
         for student_id in student_ids:
             student_profile = get_object_or_404(StudentProfile, pk=student_id)
             status = request.POST.get(f'attendance_status_{student_id}')
             is_present = (status == 'present')
 
-            # Use update_or_create to handle both new and existing records gracefully.
-            # This prevents duplicate entries and allows for easy updates.
+            # Use update_or_create, now including the time_slot
             Attendance.objects.update_or_create(
                 student=student_profile,
                 subject=subject,
                 date=attendance_date,
+                time_slot=selected_time_slot,  # Pass the selected time slot object
                 defaults={'is_present': is_present}
             )
 
-        messages.success(request, f"Attendance for {subject.name} on {attendance_date} has been saved successfully.")
+        messages.success(request,
+                         f"Attendance for {subject.name} on {attendance_date} at {selected_time_slot} has been saved.")
         return redirect('faculty_dashboard')
 
     context = {
         'subject': subject,
         'students': students,
+        'time_slots': time_slots,  # Pass time slots to the template
+        'today': timezone.now(),  # Pass today's date for the form default
     }
     return render(request, 'faculty/take_attendance.html', context)
 
@@ -743,23 +875,93 @@ def student_dashboard(request):
     return render(request, 'student/dashboard.html', context)
 
 
+# core/views.py
+
 @student_required
 def student_attendance_report(request):
     """
-    Displays a detailed, itemized list of a student's attendance records.
+    Generates a consolidated, subject-wise attendance report for the logged-in student.
     """
-    student = request.user.student_profile
+    try:
+        student_profile = request.user.student_profile
+    except StudentProfile.DoesNotExist:
+        return render(request, 'student/no_profile.html')
 
-    # Get all attendance records for the logged-in student, ordered by most recent date
-    attendance_records = Attendance.objects.filter(student=student).order_by('-date')
+    # Get all subjects for the student's class
+    subjects_in_course = Subject.objects.filter(course=student_profile.course).order_by('name')
+
+    # Pre-fetch total conducted lectures for each subject to be efficient
+    lectures_conducted_map = {
+        subject.id: Attendance.objects.filter(subject=subject).values('date', 'time_slot').distinct().count()
+        for subject in subjects_in_course
+    }
+
+    # Pre-fetch all of the student's 'present' attendance records at once
+    present_counts_qs = Attendance.objects.filter(
+        student=student_profile,
+        is_present=True
+    ).values('subject_id').annotate(present_count=Count('id'))
+
+    present_counts_map = {item['subject_id']: item['present_count'] for item in present_counts_qs}
+
+    # --- Build the report data ---
+    report_data = []
+    total_attended_overall = 0
+    total_conducted_overall = 0
+
+    for subject in subjects_in_course:
+        conducted_count = lectures_conducted_map.get(subject.id, 0)
+        present_count = present_counts_map.get(subject.id, 0)
+
+        percentage = (present_count / conducted_count) * 100 if conducted_count > 0 else 0.0
+
+        report_data.append({
+            'subject_name': subject.name,
+            'attended': present_count,
+            'conducted': conducted_count,
+            'percentage': percentage,
+        })
+
+        total_attended_overall += present_count
+        total_conducted_overall += conducted_count
+
+    # Calculate final overall percentage
+    overall_percentage = (
+                                     total_attended_overall / total_conducted_overall) * 100 if total_conducted_overall > 0 else 0.0
 
     context = {
-        'attendance_records': attendance_records
+        'report_data': report_data,
+        'overall_attended': total_attended_overall,
+        'overall_conducted': total_conducted_overall,
+        'overall_percentage': overall_percentage,
     }
 
     return render(request, 'student/attendance_report.html', context)
 
 
+@student_required
+def student_attendance_history(request):
+    """
+    Fetches and displays a simple, chronological list of all attendance
+    records for the logged-in student.
+    """
+    try:
+        student_profile = request.user.student_profile
+    except StudentProfile.DoesNotExist:
+        # This handles the edge case where a student user has no profile
+        # You can create a simple 'no_profile.html' template to show an error
+        return render(request, 'student/no_profile.html')
+
+    # Fetch all records for this student, ordered by most recent date and time
+    attendance_records = Attendance.objects.filter(
+        student=student_profile
+    ).select_related('subject', 'time_slot').order_by('-date', '-time_slot__start_time')
+
+    context = {
+        'attendance_records': attendance_records,
+    }
+
+    return render(request, 'student/attendance_history.html', context)
 # --- NEW Student Timetable View ---
 @student_required
 def student_timetable(request):

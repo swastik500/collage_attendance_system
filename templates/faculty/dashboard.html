@@ -2,61 +2,89 @@
 {% block title %}Faculty Dashboard - AttendSys{% endblock %}
 
 {% block content %}
-<div class="content-card">
+<div class="content-card p-4 p-md-5 bg-light rounded shadow-sm">
+
     <!-- Header -->
-    <h1 class="mb-2">Faculty Dashboard</h1>
-    <p class="lead text-secondary">Welcome, {{ request.user.first_name }}! Here is your overview for today.</p>
-    <!-- In the header div -->
-    <a href="{% url 'faculty_timetable' %}" class="btn btn-sm btn-primary">View Full Timetable</a>
-    <!-- Stats -->
-    <div class="row mt-4">
-        <div class="col-md-6 mb-4"><div class="stat-card h-100"><div class="stat-title">Assigned Subjects</div><div class="stat-value">{{ subject_count }}</div></div></div>
-        <div class="col-md-6 mb-4"><div class="stat-card h-100"><div class="stat-title">Total Students Taught</div><div class="stat-value">{{ student_count }}</div></div></div>
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+        <div>
+            <h1 class="fw-bold mb-2 text-dark">Faculty Dashboard</h1>
+            <p class="lead text-secondary mb-0">Welcome, {{ request.user.first_name }}! Here is your overview for today.</p>
+        </div>
+        <a href="{% url 'faculty_timetable' %}" class="btn btn-primary mt-3 mt-md-0">
+            <i class="fas fa-calendar-alt me-2"></i>View Full Timetable
+        </a>
     </div>
 
-    <!-- Today's Schedule -->
-    <div class="mt-4">
-        <h5 class="mb-3">Today's Schedule ({{ "now"|date:"l" }})</h5>
-        <div class="list-group">
+    <!-- Stats Section -->
+    <div class="row g-4">
+        <div class="col-md-6">
+            <div class="bg-white rounded shadow-sm p-4 text-center h-100">
+                <div class="fs-5 text-muted mb-2">Assigned Subjects</div>
+                <div class="display-6 fw-bold text-primary">{{ subject_count }}</div>
+            </div>
+        </div>
+        <div class="col-md-6">
+            <div class="bg-white rounded shadow-sm p-4 text-center h-100">
+                <div class="fs-5 text-muted mb-2">Total Students Taught</div>
+                <div class="display-6 fw-bold text-success">{{ student_count }}</div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Today's Schedule
+    <div class="mt-5">
+        <h4 class="fw-semibold mb-3">Today's Schedule <span class="text-muted">({{ "now"|date:"l" }})</span></h4>
+        <div class="list-group shadow-sm">
             {% for entry in todays_schedule %}
             <div class="list-group-item d-flex justify-content-between align-items-center">
                 <div>
-                    <h6 class="mb-0">{{ entry.subject.name }}</h6>
-                    <small class="text-secondary">{{ entry.subject.course.name }}</small>
+                    <h6 class="mb-1 fw-bold">{{ entry.subject.name }}</h6>
+                    <small class="text-muted">{{ entry.subject.course.name }}</small>
                 </div>
-                <span class="fw-bold">{{ entry.time_slot }}</span>
+                <span class="fw-semibold text-primary">{{ entry.time_slot }}</span>
             </div>
             {% empty %}
-            <div class="list-group-item text-center text-secondary">No classes scheduled for today.</div>
+            <div class="list-group-item text-center text-muted">No classes scheduled for today.</div>
             {% endfor %}
         </div>
-    </div>
+    </div> -->
 
-    <!-- Subject Management List -->
+    <!-- Subject Management -->
     <div class="mt-5">
-        <h5 class="mb-3">My Subjects Management</h5>
-        <div class="list-group">
+        <h4 class="fw-semibold mb-3">My Subjects Management</h4>
+        <div class="list-group shadow-sm">
             {% for subject in subjects %}
-            <div class="list-group-item d-flex justify-content-between align-items-center">
-                <div>
-                    <h6 class="mb-0">{{ subject.name }}</h6>
-                    <small class="text-secondary">{{ subject.course.name }}</small>
+            <div class="list-group-item d-flex justify-content-between align-items-center flex-column flex-md-row text-center text-md-start">
+                <div class="mb-2 mb-md-0">
+                    <h6 class="fw-bold mb-1">{{ subject.name }}</h6>
+                    <small class="text-muted">{{ subject.course.name }}</small>
                 </div>
-                <div>
-                    <a href="{% url 'faculty_view_attendance' subject.id %}" class="btn btn-sm btn-outline-light">View Insights</a>
-                    <a href="{% url 'faculty_take_attendance' subject.id %}" class="btn btn-sm btn-primary"><i class="fas fa-calendar-check me-1"></i>Take Attendance</a>
+                <div class="d-flex gap-2">
+                    <a href="{% url 'faculty_view_attendance' subject.id %}" class="btn btn-outline-secondary btn-sm">
+                        <i class="fas fa-chart-line me-1"></i>View Insights
+                    </a>
+                    <a href="{% url 'faculty_take_attendance' subject.id %}" class="btn btn-primary btn-sm">
+                        <i class="fas fa-calendar-check me-1"></i>Take Attendance
+                    </a>
                 </div>
             </div>
             {% empty %}
-            <div class="list-group-item text-center text-secondary">No subjects assigned.</div>
+            <div class="list-group-item text-center text-muted">No subjects assigned.</div>
             {% endfor %}
         </div>
     </div>
 
-    <!-- Leave Button -->
-    <div class="mt-4"><a href="{% url 'apply_for_leave' %}" class="btn btn-outline-light"><i class="fas fa-plane-departure me-2"></i>Apply for Leave</a></div>
+    <!-- Leave Button
+    <div class="mt-5 text-center text-md-start">
+        <a href="{% url 'apply_for_leave' %}" class="btn btn-outline-primary">
+            <i class="fas fa-plane-departure me-2"></i>Apply for Leave
+        </a>
+    </div>-->
 
     <!-- Announcements -->
-    {% include 'partials/_announcements.html' %}
+    <div class="mt-5">
+        {% include 'partials/_announcements.html' %}
+    </div>
+
 </div>
 {% endblock %}

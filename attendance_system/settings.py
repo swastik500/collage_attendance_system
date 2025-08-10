@@ -125,6 +125,12 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
+# --- AUTHENTICATION CONFIGURATION ---
+AUTHENTICATION_BACKENDS = [
+    'core.backends.EmailBackend',  # Our custom email backend
+    'django.contrib.auth.backends.ModelBackend', # Default username backend (for superuser in /admin/)
+]
+
 
 # Internationalization
 # https://docs.djangoproject.com/en/5.2/topics/i18n/

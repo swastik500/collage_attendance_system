@@ -2,63 +2,146 @@
 {% block title %}Student Dashboard - AttendSys{% endblock %}
 
 {% block content %}
-<div class="content-card">
-    <h1 class="mb-2">Student Dashboard</h1>
-    <p class="lead text-secondary mb-4">Welcome, {{ request.user.first_name }}! Here's your attendance summary.</p>
+<div class="d-flex flex-wrap bg-light min-vh-100">
 
-    <div class="row">
-        <!-- Attendance Percentage Card -->
-        <div class="col-lg-5 mb-4">
-            <div class="stat-card text-center h-100 p-4 d-flex flex-column justify-content-center">
-                <div class="stat-title">Overall Attendance</div>
-                <div class="stat-value my-3" style="color: var(--primary-accent);">{{ attendance_percentage|floatformat:1 }}<small>%</small></div>
-                <p class="text-secondary mb-0 small">Based on {{ total_classes }} classes held</p>
+    <!-- Sidebar -->
+    {% include 'partials/_sidebar.html' %}
+
+    <!-- Main Content -->
+    <div class="flex-grow-1 p-4 p-md-5">
+
+        <!-- Greeting -->
+        <div class="mb-5">
+            <h2 class="fw-bold text-dark">Welcome, {{ request.user.first_name|default:request.user.username }} 👋</h2>
+            <p class="text-muted fs-5">Here's your attendance summary. Keep it up!</p>
+        </div>
+
+        <!-- Quick Stats -->
+        <div class="row g-4 mb-5">
+            <div class="col-md-4">
+                <div class="bg-white p-4 shadow-sm rounded-3 text-center">
+                    <h6 class="text-muted">Total Classes</h6>
+                    <h4 class="fw-bold text-primary">{{ total_classes }}</h4>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="bg-white p-4 shadow-sm rounded-3 text-center">
+                    <h6 class="text-muted">Classes Attended</h6>
+                    <h4 class="fw-bold text-success">{{ present_count }}</h4>
+                </div>
+            </div>
+            <div class="col-md-4">
+                <div class="bg-white p-4 shadow-sm rounded-3 text-center">
+                    <h6 class="text-muted">Classes Missed</h6>
+                    <h4 class="fw-bold text-danger">{{ absent_count }}</h4>
+                </div>
             </div>
         </div>
-        <!-- Attendance Chart Card -->
-        <div class="col-lg-7 mb-4">
-            <div class="content-card h-100 p-4">
-                <canvas id="attendanceChart"></canvas>
+
+        <!-- Attendance Card -->
+        <div class="card border-0 shadow rounded-4 mb-5">
+            <div class="card-body p-4 p-md-5">
+
+                <!-- Header -->
+                <div class="d-flex align-items-center mb-4">
+                    <div class="me-3 text-primary">
+                        <i class="fas fa-chart-pie fa-2x"></i>
+                    </div>
+                    <div>
+                        <h5 class="fw-semibold mb-1">Attendance Chart</h5>
+                        <small class="text-muted">Based on {{ total_classes }} classes held</small>
+                    </div>
+                </div>
+
+                <!-- Chart + Legend -->
+                <div class="row align-items-center justify-content-between">
+                    <!-- Chart -->
+                    <div class="col-md-6 text-center mb-4 mb-md-0">
+                        <div class="position-relative mx-auto" style="width: 200px; height: 200px;">
+                            <canvas id="attendanceChart"></canvas>
+                            <div class="position-absolute top-50 start-50 translate-middle text-center">
+                                <h3 class="fw-bold text-dark mb-0">{{ attendance_percentage|floatformat:1 }}%</h3>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Legend -->
+                    <div class="col-md-5">
+                        <ul class="list-unstyled ps-3">
+                            <li class="mb-3 d-flex align-items-center fs-6">
+                                <span class="me-3 rounded-circle d-inline-block" style="width: 14px; height: 14px; background-color: #4CAF50;"></span>
+                                <span>Present</span>
+                            </li>
+                            <li class="d-flex align-items-center fs-6">
+                                <span class="me-3 rounded-circle d-inline-block" style="width: 14px; height: 14px; background-color: #FF7043;"></span>
+                                <span>Absent</span>
+                            </li>
+                        </ul>
+                    </div>
+                </div>
+
             </div>
         </div>
-    </div>
 
-    <div class="mt-3">
-        <a href="{% url 'student_attendance_report' %}" class="btn btn-primary"><i class="fas fa-list-alt me-2"></i>View Detailed Report</a>
-        <a href="{% url 'apply_for_leave' %}" class="btn btn-outline-light"><i class="fas fa-plane-departure me-2"></i>Apply for Leave</a>
-        <a href="{% url 'student_timetable' %}" class="btn btn-outline-secondary"><i class="fas fa-calendar-alt me-2"></i>View My Timetable</a>
-    </div>
+        <!-- Progress Bar
+        <div class="mb-5">
+            <h6 class="mb-2 text-muted">Progress</h6>
+            <div class="progress rounded-pill" style="height: 20px;">
+                <div class="progress-bar bg-success" role="progressbar" style="width: {{ attendance_percentage }}%;" aria-valuenow="{{ attendance_percentage }}" aria-valuemin="0" aria-valuemax="100">
+                    {{ attendance_percentage|floatformat:1 }}%
+                </div>
+            </div>
+        </div>-->
 
-    {% include 'partials/_announcements.html' %}
+        <!-- Motivational Quote -->
+        <div class="alert alert-info shadow-sm rounded-3">
+            <i class="fas fa-lightbulb me-2"></i>
+            <strong>Tip:</strong> Consistency beats intensity. Keep attending regularly!
+        </div>
+
+        <!-- Detailed Report Button
+        <div class="text-end mt-4">
+            <a href="{% url 'student_attendance_report' %}" class="btn btn-outline-primary px-4 py-2 rounded-pill shadow-sm">
+                <i class="fas fa-list-alt me-2"></i>View Detailed Report
+            </a>
+        </div>-->
+
+    </div>
 </div>
 {% endblock %}
 
 {% block scripts %}
 <script>
-document.addEventListener("DOMContentLoaded", function() {
+document.addEventListener("DOMContentLoaded", function () {
     const ctx = document.getElementById('attendanceChart').getContext('2d');
-    const attendanceChart = new Chart(ctx, {
-        type: 'doughnut',
-        data: {
-            labels: ['Present', 'Absent'],
-            datasets: [{
-                data: [{{ present_count }}, {{ absent_count }}],
-                backgroundColor: ['#22d3ee', '#f85149'],
-                borderColor: ['#161b22'],
-                borderWidth: 4,
-                hoverOffset: 10
-            }]
-        },
-        options: {
-            responsive: true,
-            maintainAspectRatio: false,
-            cutout: '75%',
-            plugins: {
-                legend: { display: false },
-                title: { display: true, text: 'Attendance Breakdown', color: '#e6edf3', font: { size: 16 } }
+    if (ctx) {
+        new Chart(ctx, {
+            type: 'doughnut',
+            data: {
+                labels: ['Present', 'Absent'],
+                datasets: [{
+                    data: [{{ present_count }}, {{ absent_count }}],
+                    backgroundColor: ['#4CAF50', '#FF7043'],
+                    borderColor: '#ffffff',
+                    borderWidth: 5
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                cutout: '70%',
+                plugins: {
+                    legend: { display: false },
+                    tooltip: {
+                        enabled: true,
+                        backgroundColor: '#333',
+                        titleColor: '#fff',
+                        bodyColor: '#fff'
+                    }
+                }
             }
-        }
-    });
+        });
+    }
 });
 </script>
 {% endblock %}

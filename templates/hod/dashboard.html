@@ -1,0 +1,95 @@
+{% extends 'base.html' %}
+{% block title %}HOD Dashboard - AttendSys{% endblock %}
+
+{% block content %}
+<style>
+    body {
+        font-family: 'Georgia', 'Times New Roman', serif;
+    }
+    .card-classic {
+        border: 1px solid #dee2e6;
+        background-color: #fffdf9;
+        border-radius: 12px;
+        transition: 0.3s;
+    }
+    .card-classic:hover {
+        box-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
+    }
+    .stat-title {
+        font-size: 0.95rem;
+        color: #6c757d;
+        font-weight: 500;
+    }
+    .stat-value {
+        font-size: 1.4rem;
+        font-weight: bold;
+    }
+    .section-title {
+        font-family: 'Georgia', serif;
+        font-weight: bold;
+        color: #343a40;
+    }
+</style>
+
+<div class="content-card p-4 p-md-5 bg-light rounded-3 border shadow-sm">
+
+    <!-- Header -->
+    <div class="d-flex flex-column flex-md-row justify-content-between align-items-md-center mb-4">
+        <div>
+            <h1 class="section-title mb-2 mb-md-0">HOD Dashboard</h1>
+            <span class="text-muted">Department Overview</span>
+        </div>
+    </div>
+
+    <!-- Stats Cards -->
+    <div class="row g-4 mb-5">
+        <div class="col-6 col-lg-2">
+            <div class="card-classic text-center p-3 p-md-4 h-100">
+                <div class="stat-title">Total Students</div>
+                <div class="stat-value text-primary">{{ total_students }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="card-classic text-center p-3 p-md-4 h-100">
+                <div class="stat-title">Total Faculty</div>
+                <div class="stat-value text-info">{{ total_faculty }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="card-classic text-center p-3 p-md-4 h-100">
+                <div class="stat-title">Total Classes</div>
+                <div class="stat-value text-success">{{ total_classes }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="card-classic text-center p-3 p-md-4 h-100">
+                <div class="stat-title">Total Subjects</div>
+                <div class="stat-value text-secondary">{{ total_subjects }}</div>
+            </div>
+        </div>
+        <div class="col-6 col-lg-2">
+            <div class="card-classic text-center p-3 p-md-4 h-100">
+                <div class="stat-title">Avg. Attendance</div>
+                <div class="stat-value text-danger">{{ average_attendance|floatformat:1 }}<small>%</small></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Access -->
+    <div class="row mb-5">
+        <div class="col-12">
+            <h4 class="section-title mb-3">Quick Access</h4>
+            <p class="text-muted fs-6">As an HOD, you have administrative privileges. Use the admin panel for full control over academic operations.</p>
+            <a href="/admin/" class="btn btn-outline-dark rounded-pill px-4 py-2 shadow-sm" target="_blank">
+                <i class="fas fa-university me-2"></i>Open Full Admin Panel
+            </a>
+        </div>
+    </div>
+
+    <!-- Announcements -->
+    <div class="mt-4">
+        {% include 'partials/_announcements.html' %}
+    </div>
+
+</div>
+{% endblock %}

@@ -1,49 +1,55 @@
 {% extends 'base.html' %}
-{% block title %}Consolidated Report - AttendSys{% endblock %}
+{% load dict_helpers %}
+
+{% block title %}Consolidated Class Report{% endblock %}
 
 {% block content %}
 <div class="content-card">
     <h1 class="mb-4">Consolidated Class Report</h1>
 
     <!-- Filter Form -->
-    <div class="content-card mb-4" style="background: rgba(0,0,0,0.2);">
-        <form method="get" class="row g-3 align-items-end">
-            <div class="col-md-6">
-                <label for="course" class="form-label">Select Class to Generate Report</label>
-                <select name="course" id="course" class="form-select">
-                    <option value="">-- Select a Class --</option>
-                    {% for course in courses %}
-                    <option value="{{ course.id }}" {% if selected_course.id == course.id %}selected{% endif %}>
-                        {{ course.name }}
-                    </option>
-                    {% endfor %}
-                </select>
-            </div>
-            <div class="col-md-3">
-                <button type="submit" class="btn btn-primary w-100">Fetch Report</button>
-            </div>
-            <!-- A placeholder for a future Print button -->
-            <div class="col-md-3">
-                <button type="button" class="btn btn-outline-light w-100" onclick="window.print();">Print Report</button>
-            </div>
-        </form>
+    <div class="card mb-4" style="background-color: #f8f9fa;">
+        <div class="card-body">
+            <form method="get" class="row g-3 align-items-center">
+                <div class="col-md-5">
+                    <label for="class_select" class="form-label">Select Class to Generate Report</label>
+                    <select name="class" id="class_select" class="form-select">
+                        <option value="">-- Select a Class --</option>
+                        {% for class_obj in classes %}
+                        <option value="{{ class_obj.id }}" {% if selected_class.id == class_obj.id %}selected{% endif %}>
+                            {{ class_obj.name }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label"> </label>
+                    <button type="submit" class="btn btn-primary w-100">Fetch Report</button>
+                </div>
+                <div class="col-md-2">
+                    <label class="form-label"> </label>
+                    <button type="button" class="btn btn-outline-secondary w-100" onclick="window.print();">Print Report</button>
+                </div>
+            </form>
+        </div>
     </div>
 
-    {% if selected_course %}
-    <hr style="border-color: rgba(255,255,255,0.2); margin: 2rem 0;">
-
-    <h3 class="mb-3">Report for: {{ selected_course.name }}</h3>
+    {% if selected_class %}
+    <h3 class="mb-3">Report for: {{ selected_class.name }}</h3>
 
     <div class="table-responsive">
         <table class="table table-bordered table-hover text-center">
             <thead class="table-light">
-                <tr class="text-dark">
-                    <th style="width: 5%;">Sr. No.</th>
-                    <th style="width: 25%;" class="text-start">Name of Student</th>
+                <tr>
+                    <th style="vertical-align: middle;">Sr. No.</th>
+                    <th style-="vertical-align: middle;" class="text-start">Name of Student</th>
+
+                    <!-- This correctly renders the subject names in the header -->
                     {% for subject in subjects_in_course %}
-                        <th>{{ subject.name }}</th>
+                        <th>{{ subject.name|upper }}</th>
                     {% endfor %}
-                    <th style="width: 15%;">Total Attendance Percentage</th>
+
+                    <th style="vertical-align: middle;">Total Attendance Percentage</th>
                 </tr>
             </thead>
             <tbody>
@@ -52,11 +58,15 @@
                     <td>{{ forloop.counter }}</td>
                     <td class="text-start">{{ data.profile.user.get_full_name|upper }}</td>
                     {% for att in data.subject_attendance %}
-                        <td>{{ att.attended }} / {{ att.conducted }}</td>
+                        <td>
+                            {{ att.attended }} / {{ att.conducted }}
+                            <br>
+                            <small class="text-secondary">({{ att.percentage|floatformat:1 }}%)</small>
+                        </td>
                     {% endfor %}
                     <td class="fw-bold">
                         {% if data.percentage < 75 %}
-                            <span style="color: var(--text-danger);">{{ data.percentage|floatformat:2 }}%</span>
+                            <span class="text-danger">{{ data.percentage|floatformat:2 }}%</span>
                         {% else %}
                             <span>{{ data.percentage|floatformat:2 }}%</span>
                         {% endif %}
@@ -65,6 +75,31 @@
                 {% endfor %}
             </tbody>
         </table>
+    </div>
+
+    <!-- Report Summary Section -->
+    <div class="row mt-4 justify-content-end">
+        <div class="col-md-5 col-lg-4">
+            <div class="card">
+                <div class="card-header bg-light">
+                    <strong>Report Summary</strong>
+                </div>
+                <ul class="list-group list-group-flush">
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Total Students in Report
+                        <span class="badge bg-primary rounded-pill">{{ total_students_in_report }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Students Above 75%
+                        <span class="badge bg-success rounded-pill">{{ students_above_75 }}</span>
+                    </li>
+                    <li class="list-group-item d-flex justify-content-between align-items-center">
+                        Students Below 75%
+                        <span class="badge bg-danger rounded-pill">{{ students_below_75 }}</span>
+                    </li>
+                </ul>
+            </div>
+        </div>
     </div>
     {% endif %}
 </div>

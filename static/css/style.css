@@ -1,136 +1,417 @@
-/* static/css/style.css - Unified "Airy Blue & Pink" Theme */
-
-/* 1. Import Font and Define Core Variables */
-@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+/* ==============================================
+   IMPORTS & GLOBAL THEME
+   ==============================================
+*/
+@import url('https://fonts.googleapis.com/css2?family=Poppins:wght@400;500;600;700&display=swap');
 
 :root {
-    --bg-light: #E2F0F9;
-    --bg-white: #FFFFFF;
-    --primary-blue: #286FB4;
-    --accent-teal: #B0DDE4;
-    --accent-pink: #DF4C73;
-    --text-dark: #212529;
-    --text-light: #6c757d;
-    --font-family: 'Inter', sans-serif;
-    --card-shadow: 0 4px 12px rgba(0, 0, 0, 0.08);
-    --border-color: #dee2e6;
+    /* Unified Color Palette - Yellow & Sage Theme */
+    --primary-color: #F8DE7E;         /* Jasmine Yellow */
+    --primary-dark-hover: #eac457;     /* Darker yellow for hover states */
+    --secondary-color: #828E84;       /* Deep Sage Green */
+    --secondary-dark-hover: #6F7A71;  /* Darker Sage for hover states */
+    --accent-color: #B2BEB5;          /* Laurel Green */
+    --danger-color: #e53e3e;           /* Red for errors/warnings (Unchanged for UX) */
+
+    /* Background & Surface Colors */
+    --bg-color: #FCFAF6;              /* Warm Off-White */
+    --surface-color: #ffffff;         /* Pure White for cards */
+    --illustration-bg: #FDFD96;       /* Pastel Yellow */
+
+    /* Text & Border Colors */
+    --text-dark: #3D403D;             /* Dark Charcoal-Green for high readability */
+    --text-light: #828E84;            /* Deep Sage for secondary text */
+    --border-color: #E9EEEA;          /* Very light sage */
+
+    /* Typography & Layout */
+    --font-family: 'Poppins', sans-serif;
+    --border-radius: 12px;
+    --card-shadow: 0 8px 25px rgba(0, 0, 0, 0.07);
 }
 
-/* 2. Global Body & Typography */
+/* ==============================================
+   GENERAL & DASHBOARD STYLES
+   ==============================================
+*/
 body {
     font-family: var(--font-family);
-    background-color: var(--bg-light);
+    background-color: var(--bg-color);
     color: var(--text-dark);
 }
-h1, h2, h3, h4, h5, h6 { font-weight: 600; }
-a { color: var(--primary-blue); text-decoration: none; }
-a:hover { color: #1a4a7a; }
 
-/* 3. Main Layout & Navigation */
-.navbar {
-    background-color: var(--primary-blue) !important;
-}
-.navbar-brand { color: var(--bg-white) !important; }
-.navbar .nav-link { color: rgba(255, 255, 255, 0.8) !important; }
-.navbar .nav-link:hover { color: var(--bg-white) !important; }
-.dropdown-menu { border-color: var(--border-color); }
-.dropdown-item:active { background-color: var(--primary-blue); }
-
-/* 4. Core Component: The Content Card */
-.content-card {
-    background-color: var(--bg-white);
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--card-shadow);
-    padding: 2rem;
-}
-
-/* 5. Dashboard Stat Cards */
-.stat-card {
-    background-color: var(--bg-white);
-    border-radius: 12px;
-    border: 1px solid var(--border-color);
-    box-shadow: var(--card-shadow);
-    padding: 1.5rem;
-}
-.stat-card .stat-title {
-    text-transform: uppercase;
-    font-size: 0.8rem;
+h1, h2, h3, h4, h5, h6 {
     font-weight: 600;
-    color: var(--text-light);
+    /* Use the secondary color for headings to tie in the theme */
+    color: var(--secondary-color);
 }
-.stat-card .stat-value { font-size: 2.5rem; color: var(--primary-blue); font-weight: 700; }
-.stat-card .stat-value small { font-size: 1.25rem; }
 
-/* 6. List Group (for navigation links) */
-.list-group-item {
+a {
+    color: var(--secondary-color);
+    text-decoration: none;
+}
+a:hover {
+    color: var(--secondary-dark-hover);
+    text-decoration: underline;
+}
+
+/* Navbar */
+.navbar {
+    /* Use the deep sage for a strong, contrasting header */
+    background-color: var(--secondary-color) !important;
+    box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+}
+.navbar-brand,
+.navbar .nav-link {
+    color: var(--surface-color) !important;
+    font-weight: 500;
+}
+.navbar .nav-link:hover {
+    color: var(--surface-color) !important;
+    opacity: 0.9;
+}
+
+/* Dashboard Cards */
+.content-card,
+.stat-card,
+.quick-action-card {
+    background-color: var(--surface-color);
+    border-radius: var(--border-radius);
     border: 1px solid var(--border-color);
+    box-shadow: var(--card-shadow);
+    padding: 1.5rem 2rem;
+    margin-bottom: 1.5rem;
+}
+
+/* Buttons */
+.btn {
+    border-radius: 8px;
+    font-weight: 600;
+    padding: 10px 20px;
+    transition: all 0.2s ease-in-out;
+}
+.btn-primary {
+    background-color: var(--primary-color);
+    border-color: var(--primary-color);
+    /* Dark text for readability on yellow background */
+    color: var(--text-dark);
+}
+.btn-primary:hover {
+    background-color: var(--primary-dark-hover);
+    border-color: var(--primary-dark-hover);
+    color: var(--text-dark);
+    transform: translateY(-1px);
+}
+.btn-secondary {
+    background-color: var(--secondary-color);
+    border-color: var(--secondary-color);
+    color: var(--surface-color);
+}
+.btn-secondary:hover {
+    background-color: var(--secondary-dark-hover);
+    border-color: var(--secondary-dark-hover);
+    color: var(--surface-color);
+    transform: translateY(-1px);
+}
+.btn-danger {
+    background-color: var(--danger-color);
+    border-color: var(--danger-color);
+    color: var(--surface-color);
+}
+.btn-danger:hover {
+    background-color: #c53030; /* Darker red */
+    border-color: #c53030;
+    color: var(--surface-color);
+    transform: translateY(-1px);
+}
+
+/* Dashboard Forms */
+.form-control, .form-select {
+    border: 1px solid var(--border-color);
+    background-color: #fdfdfd; /* Slightly adjusted for forms */
+    border-radius: 8px;
+}
+.form-control:focus, .form-select:focus {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(248, 222, 126, 0.3);
+    background-color: var(--surface-color);
+}
+
+/* Tables */
+.table thead {
+    background-color: #F8F9F8; /* Light Sage-tinted background */
+    color: var(--text-dark);
+    border-bottom: 2px solid var(--border-color);
+}
+
+/* List Groups */
+.list-group-item {
+    border-color: var(--border-color);
     transition: all 0.2s ease-in-out;
 }
 .list-group-item:hover {
     transform: translateX(5px);
-    border-left: 4px solid var(--accent-pink);
-    background-color: #f8f9fa;
+    border-left: 4px solid var(--primary-color);
+    background-color: rgba(248, 222, 126, 0.1); /* Very subtle yellow highlight */
 }
-.list-group-item .fas { color: var(--text-light); margin-right: 1rem; }
 
-/* 7. Tables */
-.table thead { background-color: #f8f9fa; }
+/* Charts */
+.chart-container {
+    position: relative;
+    height: 40vh;
+    width: 100%;
+}
 
-/* 8. Forms & Buttons */
-.form-control, .form-select {
-    border: 1px solid #ced4da;
+/* Sidebar Layout */
+.dashboard-wrapper {
+    display: flex;
+    min-height: 100vh;
+}
+.dashboard-sidebar {
+    width: 260px;
+    background-color: var(--surface-color);
+    border-right: 1px solid var(--border-color);
+    padding: 1.5rem 0;
+    flex-shrink: 0;
+    transition: width 0.3s ease;
+}
+.sidebar-nav {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+.sidebar-nav .nav-item {
+    padding: 0 1rem;
+}
+.sidebar-nav .nav-link {
+    display: flex;
+    align-items: center;
     padding: 0.75rem 1rem;
+    border-radius: var(--border-radius);
+    color: var(--text-light);
+    font-weight: 500;
+    margin-bottom: 0.5rem;
+    transition: background-color 0.2s, color 0.2s;
 }
-.form-control:focus, .form-select:focus {
-    border-color: var(--primary-blue);
-    box-shadow: 0 0 0 3px rgba(40, 111, 180, 0.2);
+.sidebar-nav .nav-link.active,
+.sidebar-nav .nav-link:hover {
+    /* Using secondary color for active state for better text contrast */
+    background-color: var(--secondary-color);
+    color: var(--surface-color);
 }
-.btn-primary {
-    background-color: var(--primary-blue);
-    border-color: var(--primary-blue);
+.sidebar-nav .nav-link .fas {
+    margin-right: 1rem;
+    width: 20px;
+    text-align: center;
 }
-.btn-primary:hover { background-color: #1a4a7a; border-color: #1a4a7a; }
-.btn-danger { background-color: var(--accent-pink); border-color: var(--accent-pink); }
+.dashboard-content {
+    flex-grow: 1;
+    padding: 2.5rem;
+    overflow-y: auto;
+    background-color: var(--bg-color);
+}
 
-/* 9. Standalone Login Page */
-.login-body { background-color: #f8f9fa; }
-.login-container { max-width: 900px; box-shadow: 0 10px 40px rgba(0,0,0,0.1); border-radius: 10px; overflow: hidden; }
-.login-form-column { padding: 50px 40px; }
-.login-image-column {
-    background-color: var(--accent-teal);
+/* ==============================================
+   LOGIN PAGE STYLES (FINAL DESIGN)
+   ==============================================
+*/
+body.login-body {
+    background-color: var(--bg-color);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    min-height: 100vh;
+    padding: 1.5rem;
+}
+
+.login-container {
+    max-width: 1000px;
+    width: 100%;
+    min-height: 600px;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background-color: var(--surface-color);
+    border-radius: 20px;
+    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.1);
+    overflow: hidden;
+}
+
+/* Illustration Column (Left side) */
+.login-illustration-column {
+    /* Using the pastel yellow for a soft, thematic background */
+    background-color: var(--illustration-bg);
+    position: relative;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.login-illustration-column img {
+    max-width: 100%;
+    height: auto;
+}
+
+/* Form Column (Right side) */
+.login-form-column {
+    padding: 3rem;
     display: flex;
     align-items: center;
     justify-content: center;
 }
-.login-image-column img { max-width: 80%; }
-.login-btn {
-    background-color: var(--accent-pink);
-    border-color: var(--accent-pink);
-    padding: 12px; font-weight: 600;
+.login-form-wrapper {
+    width: 100%;
+    max-width: 380px;
 }
-.login-btn:hover { background-color: #c4376b; border-color: #c4376b; }
-@media (max-width: 850px) { .login-image-column { display: none; } }
+.login-form-column .login-header {
+    margin-bottom: 2.5rem;
+}
+.login-form-column .login-header h3 {
+    font-size: 1.8rem;
+    font-weight: 700;
+    color: var(--secondary-color);
+}
+.login-form-column .login-header p {
+    color: var(--text-light);
+    font-size: 1rem;
+    margin-top: 0.5rem;
+}
 
+/* Login Page Forms */
+.login-form-column .form-group {
+    margin-bottom: 1.5rem;
+}
 
-.chat-message {
-    padding: 10px 15px;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    max-width: 85%;
-    line-height: 1.4;
-    flex-shrink: 0;
+.login-form-column .form-group label {
+    font-size: 0.85rem;
+    font-weight: 600;
+    color: var(--text-light);
+    margin-bottom: 0.5rem;
+    display: block;
 }
-.bot {
-    align-self: flex-start;
+
+.login-form-column .input-group {
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    transition: all 0.2s ease-in-out;
+    background-color: #f9fafb;
 }
-.user {
-    background-color: var(--primary-accent);
-    color: #0d1117;
-    align-self: flex-end;
-    margin-left: auto; /* Pushes the user message to the right */
+
+.login-form-column .input-group:focus-within {
+    border-color: var(--primary-color);
+    box-shadow: 0 0 0 3px rgba(248, 222, 126, 0.3);
 }
-#chat-window {
-    display: flex;
-    flex-direction: column;
+
+.login-form-column .input-group-text {
+    background-color: transparent;
+    border: none;
+    color: var(--text-light);
+}
+
+.login-form-column .form-control {
+    border: none;
+    background-color: transparent;
+    box-shadow: none !important;
+    font-size: 1rem;
+    height: 50px;
+}
+
+.form-check-label, .forgot-password-link {
+    font-size: 0.85rem;
+    font-weight: 500;
+}
+.forgot-password-link {
+    text-decoration: none;
+}
+.forgot-password-link:hover {
+    text-decoration: underline;
+}
+
+/* Login Page Button */
+.btn-login {
+    background-color: var(--primary-color);
+    border: none;
+    /* Dark text for readability on yellow button */
+    color: var(--text-dark);
+    padding: 12px;
+    font-weight: 600;
+    border-radius: 8px;
+    width: 100%;
+    transition: all 0.3s ease;
+}
+.btn-login:hover {
+    background-color: var(--primary-dark-hover);
+    transform: translateY(-2px);
+    box-shadow: 0 10px 20px -8px rgba(248, 222, 126, 0.5);
+}
+
+.signup-link {
+    text-align: center;
+    margin-top: 2rem;
+}
+.signup-link p {
+    color: var(--text-light);
+    font-size: 0.9rem;
+    margin: 0;
+}
+.signup-link a {
+    font-weight: 600;
+    text-decoration: none;
+}
+.signup-link a:hover {
+    text-decoration: underline;
+}
+
+/* Error Message */
+.error-message {
+    background-color: rgba(229, 62, 62, 0.1);
+    color: #c53030;
+    padding: 0.75rem 1rem;
+    border-radius: 8px;
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+/* ==============================================
+   RESPONSIVE ADJUSTMENTS
+   ==============================================
+*/
+@media (max-width: 991.98px) {
+    /* Dashboard Sidebar Collapse */
+    .dashboard-sidebar {
+        position: fixed;
+        left: -260px;
+        z-index: 1000;
+        height: 100%;
+    }
+    .dashboard-sidebar.show {
+        left: 0;
+    }
+    .dashboard-content {
+        padding: 1.5rem;
+    }
+
+    /* Login Page Mobile View */
+    body.login-body {
+        padding: 0; /* Remove padding for full screen experience */
+    }
+    .login-container {
+        grid-template-columns: 1fr;
+        width: 100%;
+        min-height: 100vh; /* Make container full height */
+        border-radius: 0; /* Remove border radius for full screen */
+        box-shadow: none; /* Remove shadow for full screen */
+    }
+    .login-illustration-column {
+        display: none !important;
+    }
+    .login-form-column {
+        padding: 2rem 1.5rem;
+        display: flex;
+        flex-direction: column;
+        justify-content: center; /* Center form vertically */
+    }
+    .login-form-column .login-header {
+        text-align: center;
+    }
 }

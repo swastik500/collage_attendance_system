@@ -61,6 +61,7 @@ urlpatterns = [
     path('admin_reports/low_attendance/', views.LowAttendanceReportView.as_view(), name='admin_low_attendance_report'),
     #path('admin_reports/low_attendance/pdf/', views.export_low_attendance_pdf, name='admin_low_attendance_report_pdf'),
     path('admin_reports/consolidated/', views.consolidated_report, name='admin_consolidated_report'),
+    path('admin_reports/lecture_history/', views.lecture_history_report, name='admin_lecture_history_report'),
 
 
 
@@ -68,6 +69,11 @@ urlpatterns = [
     path('admin_leave_requests/', views.LeaveRequestListView.as_view(), name='admin_leave_request_list'),
     path('admin_leave_requests/update/<int:pk>/<str:status>/', views.update_leave_request_status,
          name='admin_update_leave_status'),
+
+    # =================================================================================
+    # HOD URLS (NEW SECTION)
+    # =================================================================================
+    path('hod/dashboard/', views.hod_dashboard, name='hod_dashboard'),
     # =================================================================================
     # FACULTY & STUDENT URLS
     # =================================================================================
@@ -94,4 +100,5 @@ urlpatterns = [
     path('student_dashboard/', views.student_dashboard, name='student_dashboard'),
     path('student/timetable/', views.student_timetable, name='student_timetable'),
     path('student_attendance_report/', views.student_attendance_report, name='student_attendance_report'),
+    path('student/history/', views.student_attendance_history, name='student_attendance_history'),
 ]

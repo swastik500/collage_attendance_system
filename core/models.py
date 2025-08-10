@@ -13,6 +13,7 @@ class User(AbstractUser):
 
     class Role(models.TextChoices):
         ADMIN = "ADMIN", "Admin"
+        HOD = "HOD", "HOD"
         STUDENT = "STUDENT", "Student"
         FACULTY = "FACULTY", "Faculty"
 
@@ -132,24 +133,9 @@ class StudentProfile(models.Model):
         return f"{self.user.first_name} {self.user.last_name} ({self.roll_no})"
 
 
-class Attendance(models.Model):
-    """
-    Stores a single attendance record for a student in a subject on a specific date.
-    """
-    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name='attendance')
-    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
-    date = models.DateField()
-    is_present = models.BooleanField(default=False)
-    created_at = models.DateTimeField(auto_now_add=True)
-    updated_at = models.DateTimeField(auto_now=True)
 
-    class Meta:
-        # Prevent duplicate entries for the same student, subject, and date.
-        unique_together = ('student', 'subject', 'date')
 
-    def __str__(self):
-        status = "Present" if self.is_present else "Absent"
-        return f"{self.student} - {self.subject.name} on {self.date} [{status}]"
+
 
 
 class LeaveRequest(models.Model):
@@ -232,3 +218,37 @@ class Timetable(models.Model):
 
     def __str__(self):
         return f"{self.subject} on {self.get_day_of_week_display()} at {self.time_slot}"
+
+
+# --- NEW: HOD Manager and Proxy Model ---
+class HODManager(BaseUserManager):
+    def get_queryset(self, *args, **kwargs):
+        return super().get_queryset(*args, **kwargs).filter(role=User.Role.HOD)
+
+class HOD(User):
+    objects = HODManager()
+
+    class Meta:
+        proxy = True
+
+    def save(self, *args, **kwargs):
+        if not self.pk:
+            self.role = User.Role.HOD
+        super().save(*args, **kwargs)
+
+class Attendance(models.Model):
+    student = models.ForeignKey(StudentProfile, on_delete=models.CASCADE, related_name='attendance')
+    subject = models.ForeignKey(Subject, on_delete=models.CASCADE)
+    date = models.DateField()
+    time_slot = models.ForeignKey(TimeSlot, on_delete=models.CASCADE, null=True)  # <-- ADD THIS FIELD
+    is_present = models.BooleanField(default=False)
+    created_at = models.DateTimeField(auto_now_add=True)
+    updated_at = models.DateTimeField(auto_now=True)
+
+    class Meta:
+        # Update the uniqueness constraint to include the time slot
+        unique_together = ('student', 'subject', 'date', 'time_slot')
+
+    def __str__(self):
+        status = "Present" if self.is_present else "Absent"
+        return f"{self.student} - {self.subject.name} on {self.date} at {self.time_slot} [{status}]"
